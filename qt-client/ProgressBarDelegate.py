@@ -9,13 +9,14 @@ data = pd.DataFrame([("1", "Baharak", 10), ("2", "Darwaz", 60),
 class ProgressBarDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter, option, index):
         if index.isValid():
-            fillPercent = int(index.data(0)) / 100
+            fillPercent = float(index.data(0))
+            # fillPercent = 0.3
             self.initStyleOption(option, index)
             painter.save()
             painter.setBrush(QtGui.QColor(0, 0, 200, 40))
             painter.setPen(QtCore.Qt.NoPen)
             
-            right = QtCore.QSize((option.rect.width()) *
+            right = QtCore.QSize(option.rect.width() *
                                  fillPercent, option.rect.height())
             painter.drawRect(QtCore.QRect(option.rect.topLeft(), right))
             painter.restore()
