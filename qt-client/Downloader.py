@@ -4,6 +4,7 @@ from collections import defaultdict
 from Worker import Worker
 import zipfile
 import os
+import shutil
 
 Signal = QtCore.Signal
 
@@ -33,6 +34,7 @@ class Downloader(QtCore.QObject):
             zip_path = dl_key.as_posix()
 
             zipdir(zip_fn, zip_path)
+            shutil.rmtree(zip_path)
 
     def emit_download_complete_signal(self, dl_key, page_idx):
         self.download_completed.emit(self.index_dict[dl_key])
