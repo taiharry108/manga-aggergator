@@ -47,7 +47,7 @@ class ApiResultModel(QtCore.QAbstractTableModel):
             self.dataChanged.emit(index, index, role)
             return True
     
-    def page_download_finished(self, page_idx, output_dir, index):
+    def page_download_finished(self, index):
         row = index.row()
         column1 = self._data.columns.tolist().index('Pages Downloaded')
         total_pages_downloaded = int(self._data.iloc[row, column1]) + 1
@@ -58,4 +58,7 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         progress = total_pages_downloaded / float(self._data.iloc[row, column2])
         self.setData(self.index(row, column3), progress)
 
+    def set_total_pages(self, index, total_pages):
+        total_page_idx = self._data.columns.tolist().index('Total Pages')
+        self.setData(self.index(index.row(), total_page_idx), total_pages)
 

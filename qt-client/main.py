@@ -21,7 +21,7 @@ class Window(QtWidgets.QWidget):
         self.threadpool = QtCore.QThreadPool()
 
         self.textEdit = QtWidgets.QLineEdit(self)
-        self.textEdit.setText('guimie')
+        self.textEdit.setText('stone')
 
         # self.textEdit.editingFinished.connect(self.test)
         self.searchBtn = QtWidgets.QToolButton(self)
@@ -29,8 +29,11 @@ class Window(QtWidgets.QWidget):
         self.resultTb = MainTableView(self)
         self.resultMdl = ApiResultModel(DUMMY_DATA, self)
         self.searchBtn.clicked.connect(self.resultTb.search_manga)
+        self.textEdit.returnPressed.connect(self.resultTb.search_manga)
 
         self.resultTb.setModel(self.resultMdl)
+        self.resultTb.downloader.download_completed.connect(
+            self.resultMdl.page_download_finished)
 
         # Arrange layout
         VBlayout = QtWidgets.QVBoxLayout(self)
