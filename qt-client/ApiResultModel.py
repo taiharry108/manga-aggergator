@@ -56,7 +56,6 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         column2 = self._data.columns.tolist().index('Total Pages')
         column3 = self._data.columns.tolist().index('Progress')
         progress = total_pages_downloaded / float(self._data.iloc[row, column2])
-        print(progress)
         self.setData(self.index(row, column3), progress)
 
 
