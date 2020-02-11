@@ -27,23 +27,24 @@ class MainTableView(QtWidgets.QTableView):
                 df.columns.tolist().index('Progress'), ProgressBarDelegate())
 
 
-    def start_download_work(self, pages, index):
-        output_dir, url = pages[self.page_idx]
-        fn = output_dir/f'{self.page_idx}'
+    def start_download_work(self, pages, index, dl_key):
+        page_idx = self.page_idx_dict[dl_key]
+        output_dir, url = pages[page_idx]
+        fn = output_dir/f'{page_idx}'
         worker = Worker(self.ctr.downloadPage, filename=fn,
                         url=url)
-        self.page_idx += 1
+        self.page_idx_dict[dl_key] += 1
         self.threadpool.start(worker)
-        worker.signals.finished.connect(partial(self.model().page_download_finished, self.page_idx, output_dir, index))
+        worker.signals.finished.connect(partial(self.model(
+        ).page_download_finished, self.page_idx_dict[dl_key], output_dir, index))
 
-        if self.page_idx == len(pages):
-            self.timer.stop() 
+        if self.page_idx_dict[dl_key] == len(pages):
+            self.timer_dict[dl_key].stop()
             return
 
     def download_pages(self, index, output):
         output, new_status = output
         self.currentStatus = new_status
-        self.page_idx = 0
 
         pages_to_download = []
         model = self.model()
@@ -58,15 +59,17 @@ class MainTableView(QtWidgets.QTableView):
 
             output_dir = self.root_path/name/title
             output_dir.mkdir(parents=True, exist_ok=True)
-
             pages_to_download.append((output_dir, url))
+        
+        download_key = output_dir
 
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(50)
-        self.timer.timeout.connect(
-            partial(self.start_download_work, pages_to_download, index))
+        self.timer_dict[download_key] = timer = QtCore.QTimer()
+        self.page_idx_dict[download_key] = 0
+        timer.setInterval(50)
+        timer.timeout.connect(
+            partial(self.start_download_work, pages_to_download, index, dl_key=download_key))
 
-        self.timer.start()
+        timer.start()
 
     def search_manga(self):
         keyword = self.parent().textEdit.text()
@@ -83,7 +86,7 @@ class MainTableView(QtWidgets.QTableView):
 
     def get_pages(self, url, index):
         worker = Worker(self.ctr.getPages, url=url,
-                        new_status=ApiResultModelStatus.CHAPTER)
+                        new_status=ApiResultModelStatus.INDEX)
         worker.signals.result.connect(partial(self.download_pages, index))
 
         self.threadpool.start(worker)
@@ -104,12 +107,15 @@ class MainTableView(QtWidgets.QTableView):
     def __init__(self, parent=None):
         super(MainTableView, self).__init__(parent)
         self.root_path = Path('./downloads')
-        self.df = DUMMY_DATA
+        self.df = pd.DataFrame()
         self.currentStatus = ApiResultModelStatus.N
 
         self.threadpool = QtCore.QThreadPool()
         self.doubleClicked.connect(self.tableDoubleClicked)
         self.ctr = MangaAggreController()
+
+        self.timer_dict = {}
+        self.page_idx_dict = {}
 
 
 if __name__ == '__main__':
