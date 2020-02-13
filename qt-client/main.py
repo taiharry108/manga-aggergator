@@ -8,15 +8,16 @@ from MangaAggreController import MangaAggreController
 from MainTableView import MainTableView
 from functools import partial
 
-
-DUMMY_DATA = pd.DataFrame([[1, 2, 3], [2, 4, 6]], columns=['a', 'b', 'c'])
+DUMMY_DATA = pd.DataFrame(
+    [[1, 2, True], [2, 4, True]], columns=['a', 'b', 'c'])
 
 
 class Window(QtWidgets.QWidget):
     def __init__(self):
         super(Window, self).__init__()
 
-        self.df = DUMMY_DATA
+        # self.df = DUMMY_DATA
+        self.df = pd.DataFrame()
 
         self.threadpool = QtCore.QThreadPool()
 
@@ -27,7 +28,7 @@ class Window(QtWidgets.QWidget):
         self.searchBtn = QtWidgets.QToolButton(self)
         self.searchBtn.setText('Search')
         self.resultTb = MainTableView(self)
-        self.resultMdl = ApiResultModel(DUMMY_DATA, self)
+        self.resultMdl = ApiResultModel(self.df, self)
         self.searchBtn.clicked.connect(self.resultTb.search_manga)
         self.textEdit.returnPressed.connect(self.resultTb.search_manga)
 
@@ -49,6 +50,6 @@ if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = Window()
-    window.setGeometry(500, 300, 800, 600)
+    window.setGeometry(QtCore.QRect(200, 200, 800, 600))
     window.show()
     sys.exit(app.exec_())
