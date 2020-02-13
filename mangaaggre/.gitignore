@@ -1,0 +1,7 @@
+downloads/
+*.jpg
+*.zip
+*.csv
+*__pycache__
+*.log
+*DS_Store

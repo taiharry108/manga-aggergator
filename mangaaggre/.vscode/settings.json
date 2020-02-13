@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/Users/taichan/miniconda2/envs/scrapy_3_7/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true
+}
