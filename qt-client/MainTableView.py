@@ -8,9 +8,6 @@ from functools import partial
 from ProgressBarDelegate import ProgressBarDelegate
 from Downloader import Downloader
 
-DUMMY_DATA = pd.DataFrame([[1, 2, 3], [2, 4, 6]], columns=['a', 'b', 'c'])
-
-
 
 class MainTableView(QtWidgets.QTableView):
     def new_table_return(self, output):
