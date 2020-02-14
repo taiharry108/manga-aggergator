@@ -13,10 +13,11 @@ class MainTableView(QtWidgets.QTableView):
     def new_table_return(self, output):
         output, new_status = output
         df = pd.DataFrame(output)
+        print(df, new_status)
         self.df = df
         self.model().setNewData(df)
         self.currentStatus = new_status
-        if new_status == ApiResultModelStatus.INDEX:
+        if new_status == ApiResultModelStatus.INDEX and len(df) != 0:
             df['Progress'] = 0
             df['Pages Downloaded'] = 0
             df['Total Pages'] = 0
@@ -39,7 +40,7 @@ class MainTableView(QtWidgets.QTableView):
     def get_pages(self, url, index):
         worker = Worker(self.ctr.getPages, url=url,
                         new_status=ApiResultModelStatus.INDEX)
-        worker.signals.result.connect(partial(self.downloader.download, index))
+        worker.signals.result.connect(partial(self.downloader.download, index, url))
         worker.signals.result.connect(partial(self.set_total_pages, index))
 
         self.threadpool.start(worker)

@@ -16,8 +16,8 @@ NEWSPIDER_MODULE = 'mangaaggre.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'
-
+# USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel …) Gecko/20100101 Firefox/60.0'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 

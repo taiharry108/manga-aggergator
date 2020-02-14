@@ -53,7 +53,7 @@ class Downloader(QtCore.QObject):
         self.threadpool = QtCore.QThreadPool()
         self.ctr = ctr
 
-    def start_download_work(self, pages, dl_key):
+    def start_download_work(self, pages, dl_key, referer):
         page_idx = self.page_idx_dict[dl_key]
         if page_idx == len(pages):
             self.timer_dict[dl_key].stop()
@@ -61,13 +61,13 @@ class Downloader(QtCore.QObject):
             output_dir, url = pages[page_idx]
             fn = output_dir/f'{page_idx}'
             worker = Worker(self.ctr.downloadPage, filename=fn,
-                            url=url)
+                            url=url, referer=referer)
             self.page_idx_dict[dl_key] += 1
             self.threadpool.start(worker)
             worker.signals.finished.connect(partial(
                 self.emit_download_complete_signal, output_dir, self.page_idx_dict[dl_key]))
 
-    def download(self, index, output):
+    def download(self, index, referer, output):
         download_instrc, _ = output
         pages_to_download = []
 
@@ -88,6 +88,6 @@ class Downloader(QtCore.QObject):
         self.total_page_dict[dl_key] = len(download_instrc)
         timer.setInterval(50)
         timer.timeout.connect(
-            partial(self.start_download_work, pages_to_download, dl_key=dl_key))
+            partial(self.start_download_work, pages_to_download, dl_key=dl_key, referer=referer))
 
         timer.start()

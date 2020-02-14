@@ -1,10 +1,10 @@
 from PySide2 import QtWidgets, QtCore, QtGui
-from ApiResultModel import ApiResultModel, ApiResultModelStatus
+from ApiResultModel import ApiResultModel
 import pandas as pd
 from time import sleep
 from Worker import Worker
 from pathlib import Path
-from MangaAggreController import MangaAggreController
+from MangaAggreController import MangaSiteEnum
 from MainTableView import MainTableView
 from functools import partial
 
@@ -31,6 +31,10 @@ class Window(QtWidgets.QWidget):
         self.resultMdl = ApiResultModel(self.df, self)
         self.searchBtn.clicked.connect(self.resultTb.search_manga)
         self.textEdit.returnPressed.connect(self.resultTb.search_manga)
+        self.mangaSiteComboBox = QtWidgets.QComboBox(self)
+        for site in list(MangaSiteEnum):
+            self.mangaSiteComboBox.addItem(site.value)
+        self.mangaSiteComboBox.currentIndexChanged.connect(self.resultTb.ctr.setMangaSite)
 
         self.resultTb.setModel(self.resultMdl)
         self.resultTb.downloader.download_completed.connect(
@@ -42,6 +46,7 @@ class Window(QtWidgets.QWidget):
         HBlayout.setAlignment(QtCore.Qt.AlignTop)
         HBlayout.addWidget(self.textEdit)
         HBlayout.addWidget(self.searchBtn)
+        HBlayout.addWidget(self.mangaSiteComboBox)
         VBlayout.addLayout(HBlayout)
         VBlayout.addWidget(self.resultTb)
 

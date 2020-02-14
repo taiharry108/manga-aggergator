@@ -11,6 +11,7 @@ class ManhuaguiIndexSpider(scrapy.Spider):
     def start_requests(self):
         url = 'https://www.manhuagui.com/comic/' + \
             getattr(self, 'keyword', 'test')
+        url = 'https://www.manhuagui.com/comic/23270/'
         yield scrapy.Request(url, self.parse)
 
     def parse(self, response):
@@ -27,7 +28,7 @@ class ManhuaguiIndexSpider(scrapy.Spider):
         divs = div.css('div.chapter-list')
         name = response.css('div.book-title h1::text').get()
         for idx_type, div in zip(idx_types, divs):
-            type_ = get_type(idx_type)
+            type_ = get_type(idx_type).value
             for ul in div.css('ul'):
                 for a in reversed(ul.css('a')):
                     title = a.css('::attr(title)').get()

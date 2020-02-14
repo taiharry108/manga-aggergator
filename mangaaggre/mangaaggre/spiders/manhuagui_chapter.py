@@ -18,7 +18,7 @@ class ManhuaguiChapterSpider(scrapy.Spider):
     allowed_domains = ['www.manhuagui.com']
 
     def start_requests(self):
-        yield scrapy.Request('https://www.manhuagui.com/comic/4681/186828.html', self.parse)
+        yield scrapy.Request('https://www.manhuagui.com/comic/23270/290296.html', self.parse)
 
     def parse(self, response):
         for script in response.css('script'):
@@ -37,10 +37,14 @@ class ManhuaguiChapterSpider(scrapy.Spider):
         md5 = manga_data["sl"]["md5"]
         manga_name = manga_data['bname']
         chap_title = manga_data['cname']
+        pages = []
         for idx, file in enumerate(manga_data['files']):
             page_url = f"https://i.hamreus.com{path}{file}?cid={cid}&md5={md5}"
+            pages.append(page_url)
             yield MangaChapterItem(name=manga_name,
                                    title=chap_title,
                                    page=idx,
                                    url=page_url)
+        # yield {'image_urls': pages, 'dir': f'{manga_name}/{chap_title}'}
+
 
