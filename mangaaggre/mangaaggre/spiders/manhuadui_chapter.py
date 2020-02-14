@@ -28,7 +28,7 @@ class ManhuaduiChapterSpider(scrapy.Spider):
     def start_requests(self):
         req = scrapy.Request(DOMAIN, self.parse)
         req.meta['urls'] = [
-            'https://www.manhuadui.com/manhua/guimiezhiren/460933.html']
+            'https://www.manhuadui.com/manhua/sirenzhentan/459131.html']
         yield req
     
     def decrypt_pages(self, s):
@@ -74,6 +74,7 @@ class ManhuaduiChapterSpider(scrapy.Spider):
             self.img_domain = d[0]['domain'][0]
         except:
             self.img_domain = "https://mhimg.eshanyao.com"
+        print(self.img_domain)
         
         urls = response.meta['urls']
         # urls = self.get_urls()
@@ -81,11 +82,12 @@ class ManhuaduiChapterSpider(scrapy.Spider):
             yield scrapy.Request(url, self.parse_chapter)
 
     def get_page_url(self, page_url, chap_path):
+        print(page_url)
         encodeURI = parse.quote
         if re.search('^https?://(images.dmzj.com|imgsmall.dmzj.com)', page_url):
-            return 'https://img005.eshanyao.com/showImage.php?url=' + encodeURI(page_url)
+            return f'{self.img_domain}/showImage.php?url=' + encodeURI(page_url)
         if re.search('^[a-z]/', page_url):
-            return 'https://img005.eshanyao.com/showImage.php?url=' + encodeURI("https://images.dmzj.com/" + page_url)
+            return f'{self.img_domain}/showImage.php?url=' + encodeURI("https://images.dmzj.com/" + page_url)
         if re.search("^(http:|https:|ftp:|^)//", page_url):
             return page_url
         filename = chap_path + '/' + page_url
