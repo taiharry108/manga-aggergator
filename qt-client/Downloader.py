@@ -26,7 +26,6 @@ class Downloader(QtCore.QObject):
         self.page_downloaded_dict[dl_key] += 1
         total_page = self.total_page_dict[dl_key]
         if self.page_downloaded_dict[dl_key] == total_page:
-            print('download finished')
             self.page_idx_dict.pop(dl_key)
             self.page_downloaded_dict.pop(dl_key)
             self.total_page_dict.pop(dl_key)
@@ -64,7 +63,6 @@ class Downloader(QtCore.QObject):
         output_dir = meta_dict["output_dir"]
         dl_key = meta_dict["dl_key"]
         filename = meta_dict["filename"]
-        # print(status_code, reply.url(), status_code==200)
         if status_code == 200:
             content_type = reply.header(
                 QtNetwork.QNetworkRequest.ContentTypeHeader)
@@ -82,6 +80,8 @@ class Downloader(QtCore.QObject):
         req = QtNetwork.QNetworkRequest(QtCore.QUrl(url))
         req.setHeader(QtNetwork.QNetworkRequest.UserAgentHeader,
                       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36')
+        
+        req.setAttribute(QtNetwork.QNetworkRequest.FollowRedirectsAttribute, True)
         if referer is not None:
             req.setRawHeader(bytes('Referer', 'utf-8'), bytes(referer, 'utf-8'))
             req.setRawHeader(bytes('Test', 'utf-8'),
