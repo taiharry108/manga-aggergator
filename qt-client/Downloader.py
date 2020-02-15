@@ -1,10 +1,12 @@
-from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2 import QtWidgets, QtCore, QtGui, QtNetwork
 from functools import partial
 from collections import defaultdict
 from Worker import Worker
 import zipfile
 import os
 import shutil
+from pathlib import Path
+import mimetypes
 
 Signal = QtCore.Signal
 
@@ -24,6 +26,7 @@ class Downloader(QtCore.QObject):
         self.page_downloaded_dict[dl_key] += 1
         total_page = self.total_page_dict[dl_key]
         if self.page_downloaded_dict[dl_key] == total_page:
+            print('download finished')
             self.page_idx_dict.pop(dl_key)
             self.page_downloaded_dict.pop(dl_key)
             self.total_page_dict.pop(dl_key)
@@ -40,7 +43,7 @@ class Downloader(QtCore.QObject):
         self.download_completed.emit(self.index_dict[dl_key])
         self.page_download_finished(dl_key, page_idx)
 
-    def __init__(self, parent, root_path, ctr):
+    def __init__(self, parent, root_path):
         super(Downloader, self).__init__(parent)
         self.root_path = root_path
 
@@ -51,7 +54,46 @@ class Downloader(QtCore.QObject):
         self.total_page_dict = {}
 
         self.threadpool = QtCore.QThreadPool()
-        self.ctr = ctr
+        self.manager = QtNetwork.QNetworkAccessManager(self)
+
+        
+    def replyFinished(self, meta_dict, reply):
+        status_code = reply.attribute(
+            QtNetwork.QNetworkRequest.HttpStatusCodeAttribute)
+        
+        output_dir = meta_dict["output_dir"]
+        dl_key = meta_dict["dl_key"]
+        filename = meta_dict["filename"]
+        # print(status_code, reply.url(), status_code==200)
+        if status_code == 200:
+            content_type = reply.header(
+                QtNetwork.QNetworkRequest.ContentTypeHeader)
+            if content_type.startswith('image/webp'):
+                extension = '.webp'
+            else:
+                extension = mimetypes.guess_extension(content_type)
+            with open(filename.with_suffix(extension), 'wb') as f:
+                s = reply.readAll()
+                f.write(s.data())
+            self.emit_download_complete_signal(output_dir, self.page_idx_dict[dl_key])
+            reply.deleteLater()
+    
+    def downloadPage(self, output_dir, dl_key, filename: Path, url: str, referer=None):
+        req = QtNetwork.QNetworkRequest(QtCore.QUrl(url))
+        req.setHeader(QtNetwork.QNetworkRequest.UserAgentHeader,
+                      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36')
+        if referer is not None:
+            req.setRawHeader(bytes('Referer', 'utf-8'), bytes(referer, 'utf-8'))
+            req.setRawHeader(bytes('Test', 'utf-8'),
+                             bytes('this is a test', 'utf-8'))
+        meta_dict = {
+            "output_dir": output_dir,
+            "dl_key": dl_key,
+            "filename": filename,
+        }
+        reply = self.manager.get(req)
+        reply.finished.connect(partial(self.replyFinished, meta_dict, reply))
+    
 
     def start_download_work(self, pages, dl_key, referer):
         page_idx = self.page_idx_dict[dl_key]
@@ -60,12 +102,9 @@ class Downloader(QtCore.QObject):
         else:
             output_dir, url = pages[page_idx]
             fn = output_dir/f'{page_idx}'
-            worker = Worker(self.ctr.downloadPage, filename=fn,
-                            url=url, referer=referer)
+            self.downloadPage(output_dir, dl_key, filename=fn,
+                              url=url, referer=referer)
             self.page_idx_dict[dl_key] += 1
-            self.threadpool.start(worker)
-            worker.signals.finished.connect(partial(
-                self.emit_download_complete_signal, output_dir, self.page_idx_dict[dl_key]))
 
     def download(self, index, referer, output):
         download_instrc, _ = output

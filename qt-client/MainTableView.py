@@ -71,7 +71,7 @@ class MainTableView(QtWidgets.QTableView):
         self.threadpool = QtCore.QThreadPool()
         self.doubleClicked.connect(self.tableDoubleClicked)
         self.ctr = MangaAggreController()
-        self.downloader = Downloader(self, self.root_path, ctr=self.ctr)
+        self.downloader = Downloader(self, self.root_path)
         
 
 

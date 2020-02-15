@@ -1,4 +1,4 @@
-from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2 import QtWidgets, QtCore, QtGui, QtNetwork
 from ApiResultModel import ApiResultModel
 import pandas as pd
 from time import sleep
@@ -31,6 +31,7 @@ class Window(QtWidgets.QWidget):
         self.resultMdl = ApiResultModel(self.df, self)
         self.searchBtn.clicked.connect(self.resultTb.search_manga)
         self.textEdit.returnPressed.connect(self.resultTb.search_manga)
+        # self.searchBtn.clicked.connect(self.test_nam)
         self.mangaSiteComboBox = QtWidgets.QComboBox(self)
         for site in list(MangaSiteEnum):
             self.mangaSiteComboBox.addItem(site.value)
@@ -49,7 +50,8 @@ class Window(QtWidgets.QWidget):
         HBlayout.addWidget(self.mangaSiteComboBox)
         VBlayout.addLayout(HBlayout)
         VBlayout.addWidget(self.resultTb)
-
+        self.manager = QtNetwork.QNetworkAccessManager(self)
+    
 
 if __name__ == '__main__':
     import sys
