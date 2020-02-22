@@ -5,6 +5,30 @@ from functools import partial
 from pathlib import Path
 from Manga import Manga, MangaIndexTypeEnum
 import re
+from Crypto.Cipher import AES
+import base64
+import json
+from urllib import parse
+
+def decrypt(encrypted) -> str:
+    encrypted = base64.b64decode(encrypted)
+    passphrase = "123456781234567G"
+    iv = "ABCDEF1G34123412"
+    aes = AES.new(passphrase, AES.MODE_CBC, iv)
+
+    decrypted = aes.decrypt(encrypted)
+    return decrypted.strip().decode('utf8')
+
+
+def decrypt_pages(s):
+    decrypted = decrypt(s)
+    idx = decrypted.find('"]')
+    if idx != -1:
+        decrypted = decrypted[:idx+2]
+        pages = json.loads(decrypted)
+    else:
+        pages = []
+    return pages
 
 QNetworkReply = QtNetwork.QNetworkReply
 class ManHuaDui(MangaSite):    
@@ -12,7 +36,6 @@ class ManHuaDui(MangaSite):
     def __init__(self):
         super(ManHuaDui, self).__init__('漫畫堆', 'https://www.manhuadui.com/')
         self.img_domain = None
-    
     
     
     def parse_search_result(self, reply: QNetworkReply, meta_dict: dict):
@@ -49,10 +72,38 @@ class ManHuaDui(MangaSite):
 
         self.index_page.emit(manga)
     
-    
+    def get_page_url(self, page_url, chap_path):
+        encodeURI = parse.quote
+        if re.search('^https?://(images.dmzj.com|imgsmall.dmzj.com)', page_url):
+            return f'{self.img_domain}/showImage.php?url=' + encodeURI(page_url)
+        if re.search('^[a-z]/', page_url):
+            return f'{self.img_domain}/showImage.php?url=' + encodeURI("https://images.dmzj.com/" + page_url)
+        if re.search("^(http:|https:|ftp:|^)//", page_url):
+            return page_url
+        filename = chap_path + '/' + page_url
+        return self.img_domain + '/' + filename
     
     def parse_page_urls(self, reply: QNetworkReply, meta_dict: dict):
-        pass
+        data = reply.readAll()
+        soup = BeautifulSoup(data.data(), features="html.parser")
+
+        pattern = re.compile(
+            'chapterImages = "(.*)";var chapterPath = "(.*)";var chapterPrice')
+        for script in soup.find_all('script'):
+            match = pattern.search(script.text)
+            if match:
+                break
+
+        pages = decrypt_pages(match.group(1))
+        chap_path = match.group(2)
+
+        manga_name = soup.find('div', class_='head_title').a.text
+        chap_title = soup.find('div', class_='head_title').h2.text
+
+        pages = [self.get_page_url(page, chap_path) for page in pages]
+
+        self.get_pages.emit(pages)
+
 
     def search_manga(self, keyword):
         search_url = f'{self.url}search/?keywords={keyword}'
@@ -72,6 +123,10 @@ class ManHuaDui(MangaSite):
         except:
             self.img_domain = "https://mhimg.eshanyao.com"
         
+        if "chapter_url" in meta_dict.keys():
+            self.downloader.get_request(
+                meta_dict['chapter_url'], self.parse_page_urls)
+        
     
     def parse(self, reply: QNetworkReply, meta_dict: dict):
         data = reply.readAll()
@@ -81,14 +136,15 @@ class ManHuaDui(MangaSite):
             src = script.get('src')
             if src is not None and 'config.js' in src:
                 url = self.url + src.lstrip('/')
-                self.downloader.get_request(url, self.parse_conf)
+                self.downloader.get_request(url, self.parse_conf, meta_dict=meta_dict)
         
     
-    def get_img_domain(self):
-        self.downloader.get_request(self.url, self.parse)
+    def get_img_domain(self, meta_dict):
+        self.downloader.get_request(self.url, self.parse, meta_dict=meta_dict)
 
     def get_page_urls(self, chapter_url):
         if self.img_domain is not None:
-            self.downloader.get_request(chapter_url, self.parse_page_urls)
+            self.downloader.get_request(
+                chapter_url, self.parse_page_urls)
         else:
-            self.get_img_domain()
+            self.get_img_domain(meta_dict={"chapter_url": chapter_url})

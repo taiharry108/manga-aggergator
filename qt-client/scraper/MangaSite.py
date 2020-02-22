@@ -7,6 +7,7 @@ Signal = QtCore.Signal
 class MangaSite(QtCore.QObject):
     search_result = Signal(list)
     index_page = Signal(Manga)
+    get_pages = Signal(list)
     def __init__(self, name, url, *args, **kwargs):
         super(MangaSite, self).__init__(*args, **kwargs)
         self._name = name
@@ -26,7 +27,7 @@ class MangaSite(QtCore.QObject):
     def get_url(self):
         return self._url
         
-    def get_downloader(self):
+    def get_downloader(self) -> Downloader:
         return self._downloader
     
     def search_manga(self, keyword: str) -> List[Manga]:
