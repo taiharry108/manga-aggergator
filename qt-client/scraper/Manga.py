@@ -7,13 +7,9 @@ class MangaIndexTypeEnum(Enum):
 
 class Chapter(object):
     def __init__(self, manga, title, page_url):
-        self._manga = manga
         self._title = title
         self._page_url = page_url
 
-    def get_manga(self):
-        return self._manga
-        
     def get_title(self):
         return self._title
         
@@ -27,24 +23,28 @@ class Chapter(object):
 
 
 class Manga(object):
-    def __init__(self, name, url):
+    def __init__(self, name: str, url: str, site):
         self._name = name
         self._url = url
         self._chapters = {key: [] for key in list(MangaIndexTypeEnum)}
+        self._site = site
     
     def add_chapter(self, m_type: MangaIndexTypeEnum, title:str, page_url:str):
-        self._chapters[m_type].append(Chapter(self, title, page_url))
+        self._chapters[m_type].append(Chapter(title, page_url))
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self._name
 
-    def get_url(self):
+    def get_url(self) -> str:
         return self._url
+    
+    def get_site(self):
+        return self._site
 
-    def get_chapters(self):
-        return self._chapters
+    def get_chapter(self, m_type: MangaIndexTypeEnum, idx: int) -> Chapter:
+        return self._chapter[m_type][idx]
 
     
     name = property(get_name)
     url = property(get_url)
-    chapters = property(get_chapters)
+    site = property(get_site)
