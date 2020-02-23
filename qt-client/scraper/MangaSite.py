@@ -15,7 +15,7 @@ class MangaSite(QtCore.QObject):
         self._downloader = Downloader()
         self._manga_dict = {}
     
-    def get_manga(self, manga_name, manga_url=None):
+    def get_manga(self, manga_name, manga_url=None) -> Manga:
         if not manga_name in self._manga_dict.keys():
             assert manga_url is not None
             self._manga_dict[manga_name] = Manga(name=manga_name, url=manga_url)
