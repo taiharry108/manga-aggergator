@@ -73,6 +73,7 @@ class Downloader(QtCore.QObject):
             with open(filename.with_suffix(extension), 'wb') as f:
                 s = reply.readAll()
                 f.write(s.data())
+            print(f'{filename} download finished')
             self.emit_download_complete_signal(output_dir, self.page_idx_dict[dl_key])
             reply.deleteLater()
     
@@ -91,6 +92,7 @@ class Downloader(QtCore.QObject):
             "dl_key": dl_key,
             "filename": filename,
         }
+        print(f'going to download {url}')
         reply = self.manager.get(req)
         reply.finished.connect(partial(self.replyFinished, meta_dict, reply))
     
