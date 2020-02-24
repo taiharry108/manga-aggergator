@@ -31,6 +31,8 @@ class Manga(object):
         self._url = url
         self._chapters = {key: [] for key in list(MangaIndexTypeEnum)}
         self._site = site
+        self._last_update = None
+        self._finished = None
     
     def add_chapter(self, m_type: MangaIndexTypeEnum, title:str, page_url:str):
         self._chapters[m_type].append(Chapter(title, page_url))
@@ -49,9 +51,21 @@ class Manga(object):
 
     def get_chapters(self):
         return self._chapters
+    
+    def get_finished(self):
+        return self._finished
+    
+    def get_last_udpate(self):
+        return self._last_update
+    
+    def set_meta_data(self, meta_data):
+        self._last_update = meta_data.get('last_update')
+        self._finished = meta_data.get('finished')
 
         
     name = property(get_name)
     url = property(get_url)
     site = property(get_site)
     chapters = property(get_chapters)
+    last_udpate = property(get_last_udpate)
+    finished = property(get_finished)
