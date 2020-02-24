@@ -1,10 +1,6 @@
 from PySide2 import QtWidgets, QtCore, QtGui
-import pandas as pd
 from ApiResultModel import ApiResultModel
 
-data = pd.DataFrame([("1", "Baharak", 10), ("2", "Darwaz", 20),
-                     ("3", "Fays abad", 50), ("4", "Ishkashim", 30),
-                     ("5", "Jurm", 60)], columns=['idx', 'name', 'progress'])
 Slot = QtCore.Slot
 
 
@@ -43,24 +39,3 @@ class ButtonDelegate(QtWidgets.QStyledItemDelegate):
             widget = option.widget
             style = widget.style() if widget is not None else QtWidgets.QApplication.style()
             style.drawControl(QtWidgets.QStyle.CE_PushButton, btn, painter)
-
-
-if __name__ == '__main__':
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    tv = QtWidgets.QTableView()
-    tv.setGeometry(QtCore.QRect(100, 100, 800, 600))
-
-    model = ApiResultModel(data)
-
-    def test():
-        index = model.index(1, 2)
-        value = int(model.data(index))
-        model.setData(index, value + 1)
-
-    tv.clicked.connect(test)
-    tv.setModel(model)
-    # tv.setItemDelegateForColumn(2, ProgressBarDelegate(parent=tv))
-    tv.setItemDelegateForColumn(2, ButtonDelegate())
-    tv.show()
-    sys.exit(app.exec_())

@@ -1,6 +1,5 @@
 from PySide2 import QtWidgets, QtCore, QtGui, QtNetwork
 from ApiResultModel import ApiResultModel
-import pandas as pd
 from time import sleep
 from Worker import Worker
 from pathlib import Path
@@ -9,20 +8,17 @@ from MainTableView import MainTableView
 from functools import partial
 from InfoLayout import InfoLayout
 
-DUMMY_DATA = pd.DataFrame(
-    [[1, 2, True], [2, 4, True]], columns=['a', 'b', 'c'])
-
 
 class Window(QtWidgets.QWidget):
     def __init__(self):
         super(Window, self).__init__()
 
-        self.df = pd.DataFrame()
+        self.df = []
 
         self.threadpool = QtCore.QThreadPool()
 
         self.textEdit = QtWidgets.QLineEdit(self)
-        self.textEdit.setText('stone')
+        self.textEdit.setText('stone')        
 
         self.searchBtn = QtWidgets.QToolButton(self)
         self.searchBtn.setText('Search')
@@ -51,8 +47,8 @@ class Window(QtWidgets.QWidget):
         HBlayout.addWidget(self.searchBtn)
         HBlayout.addWidget(self.mangaSiteComboBox)
 
-        OuterHBLayout.addLayout(VBlayout1)
         OuterHBLayout.addLayout(VBlayout2)
+        OuterHBLayout.addLayout(VBlayout1)
 
         VBlayout1.addLayout(HBlayout)
         VBlayout1.addWidget(self.resultTb)

@@ -14,28 +14,32 @@ class ApiResultModelStatus(Enum):
 
 class ApiResultModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, data, parent=None):
+    def __init__(self, data: list, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
-        self._data = data
+        self._data = data        
+        
         self.page_downloaded = defaultdict(set)
 
     def rowCount(self, parent=None):
-        return len(self._data.values)
+        return len(self._data)
 
     def columnCount(self, parent=None):
-        return self._data.columns.size
+        return len(self.headers)
 
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
             if role == Qt.DisplayRole:
-                return str(self._data.values[index.row()][index.column()])
+                row_idx = index.row()
+                column_idx = index.column()
+                return str(self._data[row_idx][self.headers[column_idx]])
 
     def headerData(self, column, orientation, role=QtCore.Qt.DisplayRole):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            return self._data.columns[column]
+            return self.headers[column]
 
     def setNewData(self, data):
-        old_col_n = self._data.shape[1]
+        old_col_n = len(self.headers)
+        
         self._data = data
         self.headerDataChanged.emit(QtCore.Qt.Horizontal, 0, old_col_n - 1)
 
@@ -43,22 +47,31 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         if role == Qt.EditRole:
             row = index.row()
             column = index.column()
-            self._data.iloc[row, column] = value
+            self._data[row][self.headers[column]] = value
             self.dataChanged.emit(index, index, role)
             return True
     
     def page_download_finished(self, index):
         row = index.row()
-        column1 = self._data.columns.tolist().index('Pages Downloaded')
-        total_pages_downloaded = int(self._data.iloc[row, column1]) + 1
-        self.setData(self.index(row, column1), total_pages_downloaded)
+        column1 = self.get_col_idx_from_name('Pages Downloaded')
+        column3 = self.get_col_idx_from_name('Progress')
 
-        column2 = self._data.columns.tolist().index('Total Pages')
-        column3 = self._data.columns.tolist().index('Progress')
-        progress = total_pages_downloaded / float(self._data.iloc[row, column2])
+        total_pages_downloaded = int(self._data[row]['Pages Downloaded']) + 1
+        self.setData(self.index(row, column1), total_pages_downloaded)
+        progress = total_pages_downloaded / float(self._data[row]['Total Pages'])
         self.setData(self.index(row, column3), progress)
+    
+    def get_col_idx_from_name(self, name: str) -> int:
+        return self.headers.index(name)
 
     def set_total_pages(self, index, total_pages):
-        total_page_idx = self._data.columns.tolist().index('Total Pages')
+        total_page_idx = self.get_col_idx_from_name('Total Pages')
         self.setData(self.index(index.row(), total_page_idx), total_pages)
+    
+    def get_headers(self):
+        if len(self._data) != 0:
+            return list(self._data[0].keys())
+        else:
+            return []
 
+    headers = property(get_headers)
