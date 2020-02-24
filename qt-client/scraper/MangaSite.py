@@ -11,7 +11,7 @@ class MangaSite(QtCore.QObject):
         super(MangaSite, self).__init__(*args, **kwargs)
         self._name = name
         self._url = url
-        self._downloader = Downloader()
+        self._downloader = Downloader(self, root_path='./downloads')
         self._manga_dict = {}
     
     def get_manga(self, manga_name, manga_url=None) -> Manga:
@@ -35,8 +35,11 @@ class MangaSite(QtCore.QObject):
     def get_index_page(self, page):
         raise NotImplementedError
 
-    def get_page_urls(self, manga, m_type, idx):
+    def get_page_urls(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         raise NotImplementedError
+
+    def download_chapter(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        self._downloader.download_manga_chapter(manga, m_type, idx)
     
     name = property(get_name)
     url = property(get_url)

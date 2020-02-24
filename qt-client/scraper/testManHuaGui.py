@@ -101,7 +101,7 @@ class TestManHuaGui(unittest.TestCase):
         loop.exec_()
     
     def test_get_page_urls(self):
-        def page_urls_callback(loop, page_urls):
+        def page_urls_callback(loop, page_urls, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
             self.assertEqual(len(page_urls), 208)
             self.assertEqual(
                 page_urls[0], 'https://i.hamreus.com/ps1/h/naruto/69/NARUTO69_000.jpg.webp?cid=194193&md5=9rdIwhvMsyOQN8DK0alICQ')
@@ -116,14 +116,17 @@ class TestManHuaGui(unittest.TestCase):
             QtWidgets.QApplication([])
 
         mhg = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaGui)
-        mhg.get_page_urls('https://www.manhuagui.com/comic/4681/194193.html')
+        manga = Manga(
+            name='火影忍者', url='https://www.manhuagui.com/comic/4681/',
+            site=mhg)
+        manga.add_chapter(MangaIndexTypeEnum.CHAPTER, title='第69卷',
+                          page_url='https://www.manhuagui.com/comic/4681/194193.html')
+        mhg.get_page_urls(manga, MangaIndexTypeEnum.CHAPTER, 0)
         loop = QtCore.QEventLoop()
 
-        mhg.get_pages.connect(partial(page_urls_callback, loop))
+        mhg.get_pages_completed.connect(partial(page_urls_callback, loop))
 
 
         if timeout is not None:
             QtCore.QTimer.singleShot(timeout, partial(call_timeout, loop))
         loop.exec_()
-
-    

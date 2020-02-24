@@ -7,7 +7,6 @@ from PySide2 import QtWidgets, QtCore
 from typing import List, Dict
 from functools import partial
 
-DLR = Downloader(None)
 
 def call_timeout(loop):
     loop.quit()
@@ -44,7 +43,6 @@ class TestManHuaDui(unittest.TestCase):
         
         mhd.search_result.connect(partial(search_callback, loop))
         
-        self.assertEqual(DLR, mhd.downloader)
         mhd.search_manga('pengyouyouxi')
         if timeout is not None:
             QtCore.QTimer.singleShot(timeout, partial(call_timeout, loop))
@@ -75,7 +73,7 @@ class TestManHuaDui(unittest.TestCase):
         loop.exec_()
 
     def test_get_page_urls(self):
-        def page_urls_callback(loop, page_urls):
+        def page_urls_callback(loop, page_urls, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
             self.assertEqual(len(page_urls), 40)
             self.assertEqual(page_urls[0], 'https://mhimg.eshanyao.com/ManHuaKu/p/pengyouyouxi/75/145829.jpg')
             self.assertEqual(page_urls[1], 'https://mhimg.eshanyao.com/ManHuaKu/p/pengyouyouxi/75/145830.jpg')
@@ -87,10 +85,16 @@ class TestManHuaDui(unittest.TestCase):
             QtWidgets.QApplication([])
         
         mhd = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaDui)
-        mhd.get_page_urls('https://www.manhuadui.com/manhua/pengyouyouxi/461357.html')
+        manga = Manga(
+            name='朋友游戏', url='https://www.manhuadui.com/manhua/pengyouyouxi/',
+            site=mhd)
+        manga.add_chapter(MangaIndexTypeEnum.CHAPTER, title='75话「还是老样子呢」',
+                          page_url='https://www.manhuadui.com/manhua/pengyouyouxi/461357.html')
+
+        mhd.get_page_urls(manga, MangaIndexTypeEnum.CHAPTER, 0)
         loop = QtCore.QEventLoop()
 
-        mhd.get_pages.connect(partial(page_urls_callback, loop))
+        mhd.get_pages_completed.connect(partial(page_urls_callback, loop))
         
 
         if timeout is not None:
