@@ -54,6 +54,18 @@ class ManHuaDui(MangaSite):
             result.append(manga)
         self.search_result.emit(result)
     
+    def get_meta_data(self, soup):
+        last_update = soup.find('span', class_='zj_list_head_dat')
+        if last_update is not None:
+            match = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}', last_update.text)
+            if match:
+                last_update = match.group(0)
+        
+        finished = soup.find('ul', class_='comic_deCon_liO').find('a', {'href':'/list/wanjie/'}) is not None
+        thum_img = soup.find('div', class_='comic_i_img').find('img').get('src')
+        
+        return {'last_update':last_update, 'finished': finished, 'thum_img':thum_img}
+    
     def parse_index_result(self, reply: QNetworkReply, meta_dict: dict):
         data = reply.readAll()
         soup = BeautifulSoup(data.data(), features="html.parser")
@@ -71,15 +83,7 @@ class ManHuaDui(MangaSite):
             title = li.a.get('title')
             manga.add_chapter(m_type=m_type, title=title, page_url=url)
         
-        last_update = soup.find('span', class_='zj_list_head_dat')
-        if last_update is not None:
-            match = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}', last_update.text)
-            if match:
-                last_update = match.group(0)
-        
-        finished = soup.find('ul', class_='comic_deCon_liO').find('a', {'href':'/list/wanjie/'}) is not None
-        
-        manga.set_meta_data({'last_update':last_update, 'finished': finished})
+        manga.set_meta_data(self.get_meta_data(soup))
 
         self.index_page.emit(manga)
     

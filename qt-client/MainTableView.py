@@ -69,14 +69,15 @@ class MainTableView(QtWidgets.QTableView):
                 url = chapter.page_url
                 output.append({'name': name, 'url': url, 'title':title, 'm_type': m_type, 'chapter_idx': chapter_idx})
         output = (output, ApiResultModelStatus.INDEX)
-        self.manga = manga
+        self.manga = manga        
         self.new_table_return(output)
     
     def set_site(self, idx):
         self.site = get_manga_site(list(MangaSiteEnum)[idx], self.downloader)
         self.site.search_result.connect(self.search_result_return)
         self.site.index_page.connect(self.index_page_return)
-        self.site.get_pages_completed.connect(self.get_pages_return)
+        self.site.index_page.connect(self.parent().info_layout.update_info)
+        self.site.get_pages_completed.connect(self.get_pages_return)        
     
     def get_pages_return(self, pages: list, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         index = self.index_dict[(m_type, idx)]

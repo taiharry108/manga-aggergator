@@ -26,6 +26,7 @@ class Window(QtWidgets.QWidget):
 
         self.searchBtn = QtWidgets.QToolButton(self)
         self.searchBtn.setText('Search')
+        self.info_layout = InfoLayout()
         self.resultTb = MainTableView(self)
         self.resultMdl = ApiResultModel(self.df, self)
         self.searchBtn.clicked.connect(self.resultTb.search_manga)
@@ -43,8 +44,8 @@ class Window(QtWidgets.QWidget):
         VBlayout1 = QtWidgets.QVBoxLayout()
         VBlayout2 = QtWidgets.QVBoxLayout()
         HBlayout = QtWidgets.QHBoxLayout()
-        self.info_layout = InfoLayout()
-
+        
+        
         HBlayout.setAlignment(QtCore.Qt.AlignTop)
         HBlayout.addWidget(self.textEdit)
         HBlayout.addWidget(self.searchBtn)
@@ -53,10 +54,10 @@ class Window(QtWidgets.QWidget):
         OuterHBLayout.addLayout(VBlayout1)
         OuterHBLayout.addLayout(VBlayout2)
 
-        
         VBlayout1.addLayout(HBlayout)
         VBlayout1.addWidget(self.resultTb)
         VBlayout2.addLayout(self.info_layout)
+
         self.manager = QtNetwork.QNetworkAccessManager(self)
     
 

@@ -4,6 +4,7 @@ from pathlib import Path
 from Manga import Manga, MangaIndexTypeEnum
 import mimetypes
 from collections import defaultdict
+from typing import Callable
 
 QNetworkReply = QtNetwork.QNetworkReply
 
@@ -30,7 +31,7 @@ class _Downloader(QtCore.QObject):
         self.total_page_dict = {}
         self.called_download_manga_chapter = False
     
-    def get_request(self, url: str, callback, referer: str=None, meta_dict=None):
+    def get_request(self, url: str, callback: Callable[[QNetworkReply, dict], None], referer: str=None, meta_dict=None):
         req = QtNetwork.QNetworkRequest(QtCore.QUrl(url))
         req.setHeader(QtNetwork.QNetworkRequest.UserAgentHeader,
                       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36')
@@ -82,8 +83,7 @@ class _Downloader(QtCore.QObject):
         self.page_downloaded_dict[dl_key] += 1
         if self.page_downloaded_dict[dl_key] == self.total_page_dict[dl_key]:
             self.emit_chapter_download_complete(manga, m_type, idx)
-            
-
+    
     def download_image(self, url: str, output_fn: str, page_idx: int, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         meta_dict = {
             'output_fn':output_fn,

@@ -55,17 +55,22 @@ class Manga(object):
     def get_finished(self):
         return self._finished
     
-    def get_last_udpate(self):
+    def get_last_update(self):
         return self._last_update
+    
+    def get_thum_img(self):
+        return self._thum_img
     
     def set_meta_data(self, meta_data):
         self._last_update = meta_data.get('last_update')
         self._finished = meta_data.get('finished')
+        self._thum_img = meta_data.get('thum_img')
 
         
     name = property(get_name)
     url = property(get_url)
     site = property(get_site)
     chapters = property(get_chapters)
-    last_udpate = property(get_last_udpate)
+    last_udpate = property(get_last_update)
     finished = property(get_finished)
+    thum_img = property(get_thum_img)
