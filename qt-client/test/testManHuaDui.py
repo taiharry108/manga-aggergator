@@ -12,10 +12,12 @@ def call_timeout(loop):
     loop.quit()
     raise TimeoutError
 
+get_mhd = partial(get_manga_site, MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
+
 
 class TestManHuaDui(unittest.TestCase):
     def test_init(self):
-        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
+        mhd = get_mhd()
         self.assertEqual(mhd.name, '漫畫堆')
         self.assertEqual(mhd.url, 'https://www.manhuadui.com/')
     
@@ -39,8 +41,7 @@ class TestManHuaDui(unittest.TestCase):
             QtWidgets.QApplication([])
 
         loop = QtCore.QEventLoop()
-        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
-        
+        mhd = get_mhd()
         mhd.search_result.connect(partial(search_callback, loop))
         
         mhd.search_manga('pengyouyouxi')
@@ -61,8 +62,7 @@ class TestManHuaDui(unittest.TestCase):
         timeout = 5000
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
-        
-        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
+        mhd = get_mhd()
         mhd.get_index_page('https://www.manhuadui.com/manhua/pengyouyouxi/')
         
         loop = QtCore.QEventLoop()
@@ -83,8 +83,7 @@ class TestManHuaDui(unittest.TestCase):
         timeout = 10000
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
-        
-        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
+        mhd = get_mhd()
         manga = Manga(
             name='朋友游戏', url='https://www.manhuadui.com/manhua/pengyouyouxi/',
             site=mhd)
@@ -102,11 +101,49 @@ class TestManHuaDui(unittest.TestCase):
         loop.exec_()
     
     def test_get_manga(self):
-        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
         name = '朋友游戏'
         url = 'https://www.manhuadui.com/manhua/pengyouyouxi/'
+        mhd = get_mhd()
         manga = mhd.get_manga(name, url)
         self.assertEqual(manga.name, name)
         self.assertEqual(manga.url, url)
         with self.assertRaises(AssertionError):
             mhd.get_manga('Test')
+    
+    def test_get_meta1(self):
+        def index_callback(loop, manga: Manga):
+            self.assertEqual(manga.last_udpate, '2019-06-13 17:17')
+            self.assertTrue(manga.finished)
+            loop.quit()
+            
+        timeout = 5000
+        if QtWidgets.QApplication.instance() is None:
+            QtWidgets.QApplication([])
+        mhd = get_mhd()
+        mhd.get_index_page('https://www.manhuadui.com/manhua/huoyingrenzhediyihuafuzhiyuangaoBOX/')
+        
+        loop = QtCore.QEventLoop()
+        mhd.index_page.connect(partial(index_callback, loop))
+
+        if timeout is not None:
+            QtCore.QTimer.singleShot(timeout, partial(call_timeout, loop))
+        loop.exec_()
+    
+    def test_get_meta2(self):
+        def index_callback(loop, manga: Manga):
+            self.assertEqual(manga.last_udpate, '2020-02-05 13:47')
+            self.assertTrue(not manga.finished)
+            loop.quit()
+            
+        timeout = 5000
+        if QtWidgets.QApplication.instance() is None:
+            QtWidgets.QApplication([])
+        mhd = get_mhd()
+        mhd.get_index_page('https://www.manhuadui.com/manhua/jinjidejuren/')
+        
+        loop = QtCore.QEventLoop()
+        mhd.index_page.connect(partial(index_callback, loop))
+
+        if timeout is not None:
+            QtCore.QTimer.singleShot(timeout, partial(call_timeout, loop))
+        loop.exec_()

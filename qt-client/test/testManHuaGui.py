@@ -11,11 +11,11 @@ from functools import partial
 def call_timeout(loop):
     loop.quit()
     raise TimeoutError
-
+get_mhg = partial(get_manga_site, MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
 
 class TestManHuaGui(unittest.TestCase):
     def test_init(self):
-        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
+        mhg = get_mhg()
         self.assertEqual(mhg.name, '漫畫鬼')
         self.assertEqual(mhg.url, 'https://www.manhuagui.com/')
     
@@ -40,7 +40,7 @@ class TestManHuaGui(unittest.TestCase):
             QtWidgets.QApplication([])
 
         loop = QtCore.QEventLoop()
-        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
+        mhg = get_mhg()
         
         mhg.search_result.connect(partial(search_callback, loop))
         
@@ -63,7 +63,7 @@ class TestManHuaGui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
         
-        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
+        mhg = get_mhg()
         mhg.get_index_page('https://www.manhuagui.com/comic/4681/')
         
         loop = QtCore.QEventLoop()
@@ -87,7 +87,7 @@ class TestManHuaGui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
 
-        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
+        mhg = get_mhg()
         mhg.get_index_page('https://www.manhuagui.com/comic/19430/')
 
         loop = QtCore.QEventLoop()
@@ -112,7 +112,7 @@ class TestManHuaGui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
 
-        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
+        mhg = get_mhg()
         manga = Manga(
             name='火影忍者', url='https://www.manhuagui.com/comic/4681/',
             site=mhg)

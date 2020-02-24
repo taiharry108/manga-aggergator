@@ -114,7 +114,11 @@ class ManHuaGui(MangaSite):
                     if not url.startswith('http'):
                         url = 'https://www.manhuagui.com/' + url.lstrip('/')
                     manga.add_chapter(m_type=m_type, title=title, page_url=url)
+        spans = soup.find('li', class_='status').find_all('span', class_='red')
+        last_update = spans[-1].text
+        finished = spans[0].text != '连载中'
 
+        manga.set_meta_data({'last_update':last_update, 'finished': finished})
         self.index_page.emit(manga)
 
     def parse_page_urls(self, reply: QNetworkReply, meta_dict: dict):
@@ -136,10 +140,8 @@ class ManHuaGui(MangaSite):
         cid = manga_data['cid']
         path = manga_data['path']
         md5 = manga_data["sl"]["md5"]
-        manga_name = manga_data['bname']
-        chap_title = manga_data['cname']
         pages = []
-        for idx, file in enumerate(manga_data['files']):
+        for file in manga_data['files']:
             page_url = f"https://i.hamreus.com{path}{file}?cid={cid}&md5={md5}"
             pages.append(page_url)
 

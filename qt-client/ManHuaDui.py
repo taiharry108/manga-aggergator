@@ -70,6 +70,16 @@ class ManHuaDui(MangaSite):
                 url = 'https://www.manhuadui.com/' + url
             title = li.a.get('title')
             manga.add_chapter(m_type=m_type, title=title, page_url=url)
+        
+        last_update = soup.find('span', class_='zj_list_head_dat')
+        if last_update is not None:
+            match = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}', last_update.text)
+            if match:
+                last_update = match.group(0)
+        
+        finished = soup.find('ul', class_='comic_deCon_liO').find('a', {'href':'/list/wanjie/'}) is not None
+        
+        manga.set_meta_data({'last_update':last_update, 'finished': finished})
 
         self.index_page.emit(manga)
     
@@ -97,9 +107,6 @@ class ManHuaDui(MangaSite):
 
         pages = decrypt_pages(match.group(1))
         chap_path = match.group(2)
-
-        manga_name = soup.find('div', class_='head_title').a.text
-        chap_title = soup.find('div', class_='head_title').h2.text
 
         pages = [self.get_page_url(page, chap_path) for page in pages]
 
