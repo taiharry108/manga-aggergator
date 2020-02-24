@@ -7,11 +7,11 @@ class MangaSite(QtCore.QObject):
     search_result = Signal(list)
     index_page = Signal(Manga)
     get_pages_completed = Signal(list, object, object, int)
-    def __init__(self, name, url, *args, **kwargs):
+    def __init__(self, name, url, downloader: Downloader, *args, **kwargs):
         super(MangaSite, self).__init__(*args, **kwargs)
         self._name = name
         self._url = url
-        self._downloader = Downloader(self, root_path='./downloads')
+        self._downloader = downloader
         self._manga_dict = {}
     
     def get_manga(self, manga_name, manga_url=None) -> Manga:
@@ -32,7 +32,7 @@ class MangaSite(QtCore.QObject):
     def search_manga(self, keyword: str) -> List[Manga]:
         raise NotImplementedError
 
-    def get_index_page(self, page):
+    def get_index_page(self, page: str):
         raise NotImplementedError
 
     def get_page_urls(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):

@@ -4,7 +4,7 @@ import pandas as pd
 from time import sleep
 from Worker import Worker
 from pathlib import Path
-from MangaAggreController import MangaSiteEnum
+from MangaSiteFactory import MangaSiteEnum
 from MainTableView import MainTableView
 from functools import partial
 
@@ -16,7 +16,6 @@ class Window(QtWidgets.QWidget):
     def __init__(self):
         super(Window, self).__init__()
 
-        # self.df = DUMMY_DATA
         self.df = pd.DataFrame()
 
         self.threadpool = QtCore.QThreadPool()
@@ -24,22 +23,20 @@ class Window(QtWidgets.QWidget):
         self.textEdit = QtWidgets.QLineEdit(self)
         self.textEdit.setText('stone')
 
-        # self.textEdit.editingFinished.connect(self.test)
         self.searchBtn = QtWidgets.QToolButton(self)
         self.searchBtn.setText('Search')
         self.resultTb = MainTableView(self)
         self.resultMdl = ApiResultModel(self.df, self)
         self.searchBtn.clicked.connect(self.resultTb.search_manga)
         self.textEdit.returnPressed.connect(self.resultTb.search_manga)
-        # self.searchBtn.clicked.connect(self.test_nam)
         self.mangaSiteComboBox = QtWidgets.QComboBox(self)
         for site in list(MangaSiteEnum):
             self.mangaSiteComboBox.addItem(site.value)
-        self.mangaSiteComboBox.currentIndexChanged.connect(self.resultTb.ctr.setMangaSite)
+        self.mangaSiteComboBox.currentIndexChanged.connect(self.resultTb.set_site)
 
         self.resultTb.setModel(self.resultMdl)
-        self.resultTb.downloader.download_completed.connect(
-            self.resultMdl.page_download_finished)
+        # self.resultTb.downloader.download_completed.connect(
+        #     self.resultMdl.page_download_finished)
 
         # Arrange layout
         VBlayout = QtWidgets.QVBoxLayout(self)

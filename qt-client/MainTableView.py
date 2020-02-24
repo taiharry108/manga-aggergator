@@ -3,10 +3,12 @@ from ApiResultModel import ApiResultModel, ApiResultModelStatus
 import pandas as pd
 from Worker import Worker
 from pathlib import Path
-from MangaAggreController import MangaAggreController
 from functools import partial
 from ProgressBarDelegate import ProgressBarDelegate
 from Downloader import Downloader
+from MangaSiteFactory import get_manga_site, MangaSiteEnum
+from typing import List
+from Manga import Manga
 
 
 class MainTableView(QtWidgets.QTableView):
@@ -26,24 +28,16 @@ class MainTableView(QtWidgets.QTableView):
 
     def search_manga(self):
         keyword = self.parent().textEdit.text()
-        worker = Worker(self.ctr.searchManga, keyword=keyword,
-                        new_status=ApiResultModelStatus.SEARCH)
-        worker.signals.result.connect(self.new_table_return)
-        self.threadpool.start(worker)
+        self.site.search_manga(keyword)
 
     def get_chapters(self, url):
-        worker = Worker(self.ctr.getChapters, url=url,
-                        new_status=ApiResultModelStatus.INDEX)
-        worker.signals.result.connect(self.new_table_return)
-        self.threadpool.start(worker)
+        self.site.get_index_page(url)
 
-    def get_pages(self, url, index):
-        worker = Worker(self.ctr.getPages, url=url,
-                        new_status=ApiResultModelStatus.INDEX)
-        worker.signals.result.connect(partial(self.downloader.download, index, url))
-        worker.signals.result.connect(partial(self.set_total_pages, index))
-
-        self.threadpool.start(worker)
+    def get_pages(self, url, index: QtCore.QModelIndex):
+        row = index.row()
+        m_type = self.df.iloc[row]['m_type']
+        chapter_idx = self.df.iloc[row]['chapter_idx']
+        self.site.download_chapter(self.manga, m_type, chapter_idx)
     
     def set_total_pages(self, index, output):
         output, _ = output
@@ -61,6 +55,29 @@ class MainTableView(QtWidgets.QTableView):
             self.get_chapters(url)
         elif self.currentStatus == ApiResultModelStatus.INDEX:
             self.get_pages(url, index)
+    
+    def search_result_return(self, mangas: List[Manga]):
+        output = ([{"name": manga.name, 'url':manga.url} for manga in mangas], ApiResultModelStatus.SEARCH)
+        self.new_table_return(output)
+    
+    def index_page_return(self, manga: Manga):        
+        chapter_dict = manga.get_chapters()
+        output = []
+        name = manga.name
+        for key, chapters in chapter_dict.items():
+            m_type = key
+            for chapter_idx, chapter in enumerate(chapters):
+                title = chapter.title
+                url = chapter.page_url
+                output.append({'name': name, 'url': url, 'title':title, 'm_type': m_type, 'chapter_idx': chapter_idx})
+        output = (output, ApiResultModelStatus.INDEX)
+        self.manga = manga
+        self.new_table_return(output)
+    
+    def set_site(self, idx):
+        self.site = get_manga_site(list(MangaSiteEnum)[idx], self.downloader)
+        self.site.search_result.connect(self.search_result_return)
+        self.site.index_page.connect(self.index_page_return)
 
     def __init__(self, parent=None):
         super(MainTableView, self).__init__(parent)
@@ -70,8 +87,9 @@ class MainTableView(QtWidgets.QTableView):
 
         self.threadpool = QtCore.QThreadPool()
         self.doubleClicked.connect(self.tableDoubleClicked)
-        self.ctr = MangaAggreController()
         self.downloader = Downloader(self, self.root_path)
+        self.manga = None
+        self.set_site(0)
         
 
 

@@ -9,6 +9,7 @@ from Crypto.Cipher import AES
 import base64
 import json
 from urllib import parse
+from Downloader import Downloader
 
 def decrypt(encrypted) -> str:
     encrypted = base64.b64decode(encrypted)
@@ -33,8 +34,8 @@ def decrypt_pages(s):
 QNetworkReply = QtNetwork.QNetworkReply
 class ManHuaDui(MangaSite):    
 
-    def __init__(self):
-        super(ManHuaDui, self).__init__('漫畫堆', 'https://www.manhuadui.com/')
+    def __init__(self, downloader: Downloader):
+        super(ManHuaDui, self).__init__('漫畫堆', 'https://www.manhuadui.com/', downloader)
         self.img_domain = None
     
     

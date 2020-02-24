@@ -11,6 +11,7 @@ from urllib import parse
 import string
 import lzstring
 import re
+from Downloader import Downloader
 digs = string.digits + string.ascii_letters
 QNetworkReply = QtNetwork.QNetworkReply
 
@@ -65,8 +66,8 @@ def decode(p, a, c, k, d):
 
 
 class ManHuaGui(MangaSite):
-    def __init__(self):
-        super(ManHuaGui, self).__init__('漫畫鬼', 'https://www.manhuagui.com/')
+    def __init__(self, downloader: Downloader):
+        super(ManHuaGui, self).__init__('漫畫鬼', 'https://www.manhuagui.com/', downloader)
 
     def parse_search_result(self, reply: QNetworkReply, meta_dict: dict):
         def handle_dict(d):
