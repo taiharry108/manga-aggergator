@@ -35,16 +35,17 @@ class Window(QtWidgets.QWidget):
         self.mangaSiteComboBox.currentIndexChanged.connect(self.resultTb.set_site)
 
         self.resultTb.setModel(self.resultMdl)
-        # self.resultTb.downloader.download_completed.connect(
-        #     self.resultMdl.page_download_finished)
+        
 
         # Arrange layout
-        VBlayout = QtWidgets.QVBoxLayout(self)
+        OuterHBLayout = QtWidgets.QHBoxLayout(self)
+        VBlayout = QtWidgets.QVBoxLayout()
         HBlayout = QtWidgets.QHBoxLayout()
         HBlayout.setAlignment(QtCore.Qt.AlignTop)
         HBlayout.addWidget(self.textEdit)
         HBlayout.addWidget(self.searchBtn)
         HBlayout.addWidget(self.mangaSiteComboBox)
+        OuterHBLayout.addLayout(VBlayout)
         VBlayout.addLayout(HBlayout)
         VBlayout.addWidget(self.resultTb)
         self.manager = QtNetwork.QNetworkAccessManager(self)
