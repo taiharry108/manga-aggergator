@@ -7,6 +7,7 @@ from pathlib import Path
 from MangaSiteFactory import MangaSiteEnum
 from MainTableView import MainTableView
 from functools import partial
+from InfoLayout import InfoLayout
 
 DUMMY_DATA = pd.DataFrame(
     [[1, 2, True], [2, 4, True]], columns=['a', 'b', 'c'])
@@ -39,15 +40,23 @@ class Window(QtWidgets.QWidget):
 
         # Arrange layout
         OuterHBLayout = QtWidgets.QHBoxLayout(self)
-        VBlayout = QtWidgets.QVBoxLayout()
+        VBlayout1 = QtWidgets.QVBoxLayout()
+        VBlayout2 = QtWidgets.QVBoxLayout()
         HBlayout = QtWidgets.QHBoxLayout()
+        self.info_layout = InfoLayout()
+
         HBlayout.setAlignment(QtCore.Qt.AlignTop)
         HBlayout.addWidget(self.textEdit)
         HBlayout.addWidget(self.searchBtn)
         HBlayout.addWidget(self.mangaSiteComboBox)
-        OuterHBLayout.addLayout(VBlayout)
-        VBlayout.addLayout(HBlayout)
-        VBlayout.addWidget(self.resultTb)
+
+        OuterHBLayout.addLayout(VBlayout1)
+        OuterHBLayout.addLayout(VBlayout2)
+
+        
+        VBlayout1.addLayout(HBlayout)
+        VBlayout1.addWidget(self.resultTb)
+        VBlayout2.addLayout(self.info_layout)
         self.manager = QtNetwork.QNetworkAccessManager(self)
     
 
