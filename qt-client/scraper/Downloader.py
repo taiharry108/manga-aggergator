@@ -2,6 +2,7 @@ from PySide2 import QtCore, QtNetwork
 from functools import partial
 from pathlib import Path
 from Manga import Manga, MangaIndexTypeEnum
+import mimetypes
 
 QNetworkReply = QtNetwork.QNetworkReply
 
@@ -17,6 +18,7 @@ class SingletonDecorator:
 
 class _Downloader(QtCore.QObject):
     download_complete = QtCore.Signal(str)
+    chapter_download_complete = QtCore.Signal()
     def __init__(self, parent, root_path: str='./downloads', *args, **kwargs):
         super(_Downloader, self).__init__(parent, *args, **kwargs)
         self.manager = QtNetwork.QNetworkAccessManager(parent)
@@ -56,12 +58,15 @@ class _Downloader(QtCore.QObject):
             reply.deleteLater()
     
     def emit_download_complete_signal(self, output_fn: str):
-        self.download_complete.emit(str)
+        self.download_complete.emit(output_fn)
 
     def download_image(self, url: str, output_fn: str, referer: str=None):
         self.get_request(url, callback=self._save_img, referer=referer, meta_dict={'output_fn':output_fn})
     
     def download_manga_chapter(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        def download_pages(pages):
+            print(pages)
+            
         chapter = manga.get_chapter(m_type, idx)
 
         name = manga.name
@@ -69,7 +74,9 @@ class _Downloader(QtCore.QObject):
         page_url = chapter.page_url
         title = chapter.title
 
+
         site.get_page_urls(page_url)
+        site.get_pages.connect(download_pages)
         
 
 

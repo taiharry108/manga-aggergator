@@ -1,4 +1,8 @@
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from MangaSite import MangaSite
 
 class MangaIndexTypeEnum(Enum):
     CHAPTER = 1
@@ -6,7 +10,7 @@ class MangaIndexTypeEnum(Enum):
     MISC = 3
 
 class Chapter(object):
-    def __init__(self, manga, title, page_url):
+    def __init__(self, title: str, page_url: str):
         self._title = title
         self._page_url = page_url
 
@@ -17,13 +21,12 @@ class Chapter(object):
         return self._page_url
         
     
-    manga = property(get_manga)
     title = property(get_title)
     page_url = property(get_page_url)
 
 
 class Manga(object):
-    def __init__(self, name: str, url: str, site):
+    def __init__(self, name: str, url: str, site: "MangaSite"):
         self._name = name
         self._url = url
         self._chapters = {key: [] for key in list(MangaIndexTypeEnum)}
@@ -42,9 +45,13 @@ class Manga(object):
         return self._site
 
     def get_chapter(self, m_type: MangaIndexTypeEnum, idx: int) -> Chapter:
-        return self._chapter[m_type][idx]
+        return self._chapters[m_type][idx]
 
-    
+    def get_chapters(self):
+        return self._chapters
+
+        
     name = property(get_name)
     url = property(get_url)
     site = property(get_site)
+    chapters = property(get_chapters)
