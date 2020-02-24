@@ -82,6 +82,14 @@ class ManHuaGui(MangaSite):
         json_data = json.loads(data)
         result = [handle_dict(d) for d in json_data]
         self.search_result.emit(result)
+    
+    def get_meta_data(self, soup):
+        spans = soup.find('li', class_='status').find_all('span', class_='red')
+        last_update = spans[-1].text
+        finished = spans[0].text != '连载中'
+        thum_img = soup.find('div', class_='book-cover').find('img').get('src')
+        
+        return {'last_update':last_update, 'finished': finished, 'thum_img':thum_img}
 
     def parse_index_result(self, reply: QNetworkReply, meta_dict: dict):
         def get_type(idx_type):
@@ -114,11 +122,9 @@ class ManHuaGui(MangaSite):
                     if not url.startswith('http'):
                         url = 'https://www.manhuagui.com/' + url.lstrip('/')
                     manga.add_chapter(m_type=m_type, title=title, page_url=url)
-        spans = soup.find('li', class_='status').find_all('span', class_='red')
-        last_update = spans[-1].text
-        finished = spans[0].text != '连载中'
+        
 
-        manga.set_meta_data({'last_update':last_update, 'finished': finished})
+        manga.set_meta_data(self.get_meta_data(soup))
         self.index_page.emit(manga)
 
     def parse_page_urls(self, reply: QNetworkReply, meta_dict: dict):
