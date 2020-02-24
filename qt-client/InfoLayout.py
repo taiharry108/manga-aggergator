@@ -10,7 +10,7 @@ class InfoLayout(QtWidgets.QVBoxLayout):
         self.last_update_lbl = QtWidgets.QLabel('')
         self.finished_lbl = QtWidgets.QLabel('')
         self.img_lbl = QtWidgets.QLabel()
-        self.img_lbl.setFixedSize(223, 300)
+        self.img_lbl.setFixedSize(180, 240)
         self.addWidget(self.name_lbl)
         self.addWidget(self.img_lbl)
         self.addWidget(self.last_update_lbl)
@@ -20,11 +20,12 @@ class InfoLayout(QtWidgets.QVBoxLayout):
     def set_thum_pic(self, reply: QtNetwork.QNetworkReply, meta_dict: dict):
         reader = QtGui.QImageReader(reply)
         pic = reader.read()
-        pixmap = QtGui.QPixmap.fromImage(pic).scaledToHeight(300)
+        pixmap = QtGui.QPixmap.fromImage(pic).scaledToHeight(240)
         self.img_lbl.setPixmap(pixmap)
         self.addWidget(self.img_lbl)
     
     def update_info(self, manga: Manga):
+        print('update info')
         self.downloader = Downloader(None, None)
         self.downloader.get_request(url=manga.thum_img, callback=self.set_thum_pic, referer=manga.url)
         manga_name = manga.name

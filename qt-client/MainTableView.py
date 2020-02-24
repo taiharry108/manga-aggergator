@@ -36,8 +36,8 @@ class MainTableView(QtWidgets.QTableView):
 
     def get_pages(self, url, index: QtCore.QModelIndex):
         row = index.row()
-        m_type = self.df.iloc[row]['m_type']
-        chapter_idx = self.df.iloc[row]['chapter_idx']
+        m_type = self.df[row]['m_type']
+        chapter_idx = self.df[row]['chapter_idx']
         self.site.download_chapter(self.manga, m_type, chapter_idx)
         self.index_dict[(m_type, chapter_idx)] = index
     
