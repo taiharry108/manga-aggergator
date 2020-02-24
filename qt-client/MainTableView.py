@@ -8,7 +8,7 @@ from ProgressBarDelegate import ProgressBarDelegate
 from Downloader import Downloader
 from MangaSiteFactory import get_manga_site, MangaSiteEnum
 from typing import List
-from Manga import Manga
+from Manga import Manga, MangaIndexTypeEnum
 
 
 class MainTableView(QtWidgets.QTableView):
@@ -38,10 +38,8 @@ class MainTableView(QtWidgets.QTableView):
         m_type = self.df.iloc[row]['m_type']
         chapter_idx = self.df.iloc[row]['chapter_idx']
         self.site.download_chapter(self.manga, m_type, chapter_idx)
+        self.index_dict[(m_type, chapter_idx)] = index
     
-    def set_total_pages(self, index, output):
-        output, _ = output
-        self.model().set_total_pages(index, len(output))
     
     def tableDoubleClicked(self, index):
         row = index.row()
@@ -78,7 +76,20 @@ class MainTableView(QtWidgets.QTableView):
         self.site = get_manga_site(list(MangaSiteEnum)[idx], self.downloader)
         self.site.search_result.connect(self.search_result_return)
         self.site.index_page.connect(self.index_page_return)
+        self.site.get_pages_completed.connect(self.get_pages_return)
+    
+    def get_pages_return(self, pages: list, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        index = self.index_dict[(m_type, idx)]
+        self.model().set_total_pages(index, len(pages))
 
+    
+    def image_download_complete(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int, page_idx: int):
+        index = self.index_dict[(m_type, idx)]
+        self.model().page_download_finished(index)
+    
+    def chapter_download_complete(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        self.index_dict.pop((m_type, idx))
+    
     def __init__(self, parent=None):
         super(MainTableView, self).__init__(parent)
         self.root_path = Path('./downloads')
@@ -88,8 +99,12 @@ class MainTableView(QtWidgets.QTableView):
         self.threadpool = QtCore.QThreadPool()
         self.doubleClicked.connect(self.tableDoubleClicked)
         self.downloader = Downloader(self, self.root_path)
+        self.downloader.download_complete.connect(self.image_download_complete)
+        self.downloader.chapter_download_complete.connect(self.chapter_download_complete)
         self.manga = None
         self.set_site(0)
+
+        self.index_dict = {}
         
 
 

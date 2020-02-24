@@ -18,8 +18,8 @@ class SingletonDecorator:
         return self.instance
 
 class _Downloader(QtCore.QObject):
-    download_complete = QtCore.Signal(str)
-    chapter_download_complete = QtCore.Signal(str)
+    download_complete = QtCore.Signal(object, object, int, int)
+    chapter_download_complete = QtCore.Signal(object, object, int)
     def __init__(self, parent, root_path: str='./downloads', *args, **kwargs):
         super(_Downloader, self).__init__(parent, *args, **kwargs)
         self.manager = QtNetwork.QNetworkAccessManager(parent)
@@ -60,36 +60,44 @@ class _Downloader(QtCore.QObject):
                 s = reply.readAll()
                 f.write(s.data())
             self.emit_download_complete_signal(
-                output_fn, meta_dict.get('page_idx'), meta_dict.get('output_dir'))
+                manga=meta_dict['manga'],
+                m_type=meta_dict['m_type'],
+                idx=meta_dict['idx'],
+                page_idx=meta_dict['page_idx']
+            )
             reply.deleteLater()
         
-    def emit_chapter_download_complete(self, output_dir: str):
-        self.chapter_download_complete.emit(output_dir)
+    def emit_chapter_download_complete(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        self.chapter_download_complete.emit(manga, m_type, idx)
+        output_dir = self.get_output_dir(manga, m_type, idx).as_posix()
         self.timer_dict.pop(output_dir)
         self.page_downloaded_dict.pop(output_dir)
         self.page_idx_dict.pop(output_dir)
         self.total_page_dict.pop(output_dir)
     
-    def emit_download_complete_signal(self, output_fn: str, page_idx: int=None, output_dir: Path=None):        
-        self.download_complete.emit(output_fn)
+    def emit_download_complete_signal(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int, page_idx: int):        
+        self.download_complete.emit(manga, m_type, idx, page_idx)
+        output_dir = self.get_output_dir(manga, m_type, idx)
         dl_key = output_dir.as_posix()
         self.page_downloaded_dict[dl_key] += 1
         if self.page_downloaded_dict[dl_key] == self.total_page_dict[dl_key]:
-            self.emit_chapter_download_complete(dl_key)
+            self.emit_chapter_download_complete(manga, m_type, idx)
             
 
-    def download_image(self, url: str, output_fn: str, referer: str=None, page_idx: int=None, output_dir: Path=None):
-        print(f'going to download {url} to {output_fn}')
-        meta_dict = {'output_fn':output_fn}
-        if page_idx is not None:
-            meta_dict['page_idx'] = page_idx
-        if output_dir is not None:
-            meta_dict['output_dir'] = output_dir
+    def download_image(self, url: str, output_fn: str, page_idx: int, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        meta_dict = {
+            'output_fn':output_fn,
+            'manga': manga,
+            'm_type': m_type,
+            'idx': idx,
+            'page_idx': page_idx}
+        
+        referer = manga.get_chapter(m_type, idx).page_url
         
         self.get_request(url, callback=self._save_img, referer=referer, meta_dict=meta_dict)
-
     
-    def _download_images(self, output_dir: Path, pages: list, referer: str=None):
+    def _download_images(self, pages: list, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        output_dir = self.get_output_dir(manga, m_type, idx)
         dl_key = output_dir.as_posix()
         page_idx = self.page_idx_dict[dl_key]
         if page_idx == len(pages):
@@ -97,8 +105,7 @@ class _Downloader(QtCore.QObject):
         else:
             url = pages[page_idx]
             fn = output_dir/f'{page_idx}'
-            
-            self.download_image(url=url, output_fn=fn.as_posix(), referer=referer, page_idx=page_idx, output_dir=output_dir)
+            self.download_image(url=url, output_fn=fn.as_posix(), page_idx=page_idx, manga=manga, m_type=m_type, idx=idx)
             self.page_idx_dict[dl_key] += 1
     
     def get_output_dir(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int) -> Path:
@@ -113,14 +120,14 @@ class _Downloader(QtCore.QObject):
     
     def download_pages(self, pages: list, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         output_dir = self.get_output_dir(manga, m_type, idx)
-        referer = manga.get_chapter(m_type, idx).page_url
         dl_key = output_dir.as_posix()
         timer = self.timer_dict[dl_key]
         self.total_page_dict[dl_key] = len(pages)
 
         timer.setInterval(50)
+        
         timer.timeout.connect(
-            partial(self._download_images, output_dir, pages, referer=referer))
+            partial(self._download_images, pages, manga, m_type, idx))
 
         timer.start()
     
