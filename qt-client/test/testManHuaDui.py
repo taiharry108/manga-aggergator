@@ -1,5 +1,5 @@
 import unittest
-import MangaSiteFactory
+from MangaSiteFactory import get_manga_site, MangaSiteEnum
 from MangaSite import MangaSite
 from Manga import Manga, Chapter, MangaIndexTypeEnum
 from Downloader import Downloader
@@ -15,7 +15,7 @@ def call_timeout(loop):
 
 class TestManHuaDui(unittest.TestCase):
     def test_init(self):
-        mhd = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaDui)
+        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
         self.assertEqual(mhd.name, '漫畫堆')
         self.assertEqual(mhd.url, 'https://www.manhuadui.com/')
     
@@ -39,7 +39,7 @@ class TestManHuaDui(unittest.TestCase):
             QtWidgets.QApplication([])
 
         loop = QtCore.QEventLoop()
-        mhd = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaDui)
+        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
         
         mhd.search_result.connect(partial(search_callback, loop))
         
@@ -62,7 +62,7 @@ class TestManHuaDui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
         
-        mhd = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaDui)
+        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
         mhd.get_index_page('https://www.manhuadui.com/manhua/pengyouyouxi/')
         
         loop = QtCore.QEventLoop()
@@ -84,7 +84,7 @@ class TestManHuaDui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
         
-        mhd = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaDui)
+        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
         manga = Manga(
             name='朋友游戏', url='https://www.manhuadui.com/manhua/pengyouyouxi/',
             site=mhd)
@@ -102,7 +102,7 @@ class TestManHuaDui(unittest.TestCase):
         loop.exec_()
     
     def test_get_manga(self):
-        mhd = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaDui)
+        mhd = get_manga_site(MangaSiteEnum.ManHuaDui, Downloader(None, './downloads'))
         name = '朋友游戏'
         url = 'https://www.manhuadui.com/manhua/pengyouyouxi/'
         manga = mhd.get_manga(name, url)
@@ -110,9 +110,3 @@ class TestManHuaDui(unittest.TestCase):
         self.assertEqual(manga.url, url)
         with self.assertRaises(AssertionError):
             mhd.get_manga('Test')
-    
-
-        
-
-
-

@@ -1,5 +1,5 @@
 import unittest
-import MangaSiteFactory
+from MangaSiteFactory import get_manga_site, MangaSiteEnum
 from MangaSite import MangaSite
 from Manga import Manga, Chapter, MangaIndexTypeEnum
 from Downloader import Downloader
@@ -7,7 +7,6 @@ from PySide2 import QtWidgets, QtCore
 from typing import List, Dict
 from functools import partial
 
-DLR = Downloader(None)
 
 def call_timeout(loop):
     loop.quit()
@@ -16,7 +15,7 @@ def call_timeout(loop):
 
 class TestManHuaGui(unittest.TestCase):
     def test_init(self):
-        mhg = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaGui)
+        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
         self.assertEqual(mhg.name, '漫畫鬼')
         self.assertEqual(mhg.url, 'https://www.manhuagui.com/')
     
@@ -41,11 +40,10 @@ class TestManHuaGui(unittest.TestCase):
             QtWidgets.QApplication([])
 
         loop = QtCore.QEventLoop()
-        mhg = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaGui)
+        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
         
         mhg.search_result.connect(partial(search_callback, loop))
         
-        self.assertEqual(DLR, mhg.downloader)
         mhg.search_manga('naruto')
         if timeout is not None:
             QtCore.QTimer.singleShot(timeout, partial(call_timeout, loop))
@@ -65,7 +63,7 @@ class TestManHuaGui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
         
-        mhg = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaGui)
+        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
         mhg.get_index_page('https://www.manhuagui.com/comic/4681/')
         
         loop = QtCore.QEventLoop()
@@ -89,8 +87,7 @@ class TestManHuaGui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
 
-        mhg = MangaSiteFactory.get_manga_site(
-            MangaSiteFactory.MangaSiteEnum.ManHuaGui)
+        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
         mhg.get_index_page('https://www.manhuagui.com/comic/19430/')
 
         loop = QtCore.QEventLoop()
@@ -115,7 +112,7 @@ class TestManHuaGui(unittest.TestCase):
         if QtWidgets.QApplication.instance() is None:
             QtWidgets.QApplication([])
 
-        mhg = MangaSiteFactory.get_manga_site(MangaSiteFactory.MangaSiteEnum.ManHuaGui)
+        mhg = get_manga_site(MangaSiteEnum.ManHuaGui, Downloader(None, './downloads'))
         manga = Manga(
             name='火影忍者', url='https://www.manhuagui.com/comic/4681/',
             site=mhg)
