@@ -102,7 +102,7 @@ class ManHuaDui(MangaSite):
 
         pages = [self.get_page_url(page, chap_path) for page in pages]
 
-        self.get_pages.emit(pages)
+        self.get_pages_completed.emit(pages, meta_dict['manga'], meta_dict['m_type'], meta_dict['idx'])
 
 
     def search_manga(self, keyword):
@@ -125,7 +125,7 @@ class ManHuaDui(MangaSite):
         
         if "chapter_url" in meta_dict.keys():
             self.downloader.get_request(
-                meta_dict['chapter_url'], self.parse_page_urls)
+                meta_dict['chapter_url'], self.parse_page_urls, meta_dict=meta_dict)
         
     
     def parse(self, reply: QNetworkReply, meta_dict: dict):
@@ -142,9 +142,11 @@ class ManHuaDui(MangaSite):
     def get_img_domain(self, meta_dict):
         self.downloader.get_request(self.url, self.parse, meta_dict=meta_dict)
 
-    def get_page_urls(self, chapter_url):
+    def get_page_urls(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        chapter = manga.get_chapter(m_type, idx)
+        chapter_url = chapter.page_url
         if self.img_domain is not None:
             self.downloader.get_request(
-                chapter_url, self.parse_page_urls)
+                chapter_url, self.parse_page_urls, meta_dict={"manga":manga, "m_type":m_type, "idx":idx})
         else:
-            self.get_img_domain(meta_dict={"chapter_url": chapter_url})
+            self.get_img_domain(meta_dict={"chapter_url": chapter_url, "manga":manga, "m_type":m_type, "idx":idx})

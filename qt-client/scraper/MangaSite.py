@@ -1,13 +1,12 @@
 from typing import List
-from Manga import Manga
+from Manga import Manga, MangaIndexTypeEnum
 from Downloader import Downloader
 from PySide2 import QtCore
-
 Signal = QtCore.Signal
 class MangaSite(QtCore.QObject):
     search_result = Signal(list)
     index_page = Signal(Manga)
-    get_pages = Signal(list)
+    get_pages_completed = Signal(list, object, object, int)
     def __init__(self, name, url, *args, **kwargs):
         super(MangaSite, self).__init__(*args, **kwargs)
         self._name = name
@@ -36,7 +35,7 @@ class MangaSite(QtCore.QObject):
     def get_index_page(self, page):
         raise NotImplementedError
 
-    def get_page_urls(self, chapter_url):
+    def get_page_urls(self, manga, m_type, idx):
         raise NotImplementedError
     
     name = property(get_name)

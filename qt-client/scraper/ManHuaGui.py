@@ -141,7 +141,8 @@ class ManHuaGui(MangaSite):
         for idx, file in enumerate(manga_data['files']):
             page_url = f"https://i.hamreus.com{path}{file}?cid={cid}&md5={md5}"
             pages.append(page_url)
-        self.get_pages.emit(pages)
+
+        self.get_pages_completed.emit(pages, meta_dict['manga'], meta_dict['m_type'], meta_dict['idx'])
 
     def search_manga(self, keyword):
         search_url = f'{self.url}tools/word.ashx?key={keyword}'
@@ -150,6 +151,8 @@ class ManHuaGui(MangaSite):
     def get_index_page(self, page):
         self.downloader.get_request(page, self.parse_index_result)
 
-    def get_page_urls(self, chapter_url):
+    def get_page_urls(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
+        chapter = manga.get_chapter(m_type, idx)
+        chapter_url = chapter.page_url
         self.downloader.get_request(
-            chapter_url, self.parse_page_urls)
+            chapter_url, self.parse_page_urls, meta_dict={"manga":manga, "m_type":m_type, "idx":idx})
