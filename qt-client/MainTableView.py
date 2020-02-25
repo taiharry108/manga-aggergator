@@ -1,6 +1,5 @@
-from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2 import QtWidgets, QtCore
 from ApiResultModel import ApiResultModel, ApiResultModelStatus
-from Worker import Worker
 from pathlib import Path
 from functools import partial
 from ProgressBarDelegate import ProgressBarDelegate
@@ -8,6 +7,14 @@ from Downloader import Downloader
 from MangaSiteFactory import get_manga_site, MangaSiteEnum
 from typing import List
 from Manga import Manga, MangaIndexTypeEnum
+import zipfile, os
+import shutil
+
+def zipdir(fn, path):
+    with zipfile.ZipFile(fn, 'w', zipfile.ZIP_DEFLATED) as ziph:
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                ziph.write(os.path.join(root, file))
 
 
 class MainTableView(QtWidgets.QTableView):
@@ -96,6 +103,12 @@ class MainTableView(QtWidgets.QTableView):
     
     def chapter_download_complete(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         self.index_dict.pop((m_type, idx))
+        output_dir = self.downloader.get_output_dir(manga, m_type, idx)
+        zip_path = output_dir.as_posix()
+        zip_fn = output_dir.with_suffix('.zip')
+        zipdir(zip_fn, zip_path)
+        shutil.rmtree(zip_path)
+
     
     def __init__(self, parent=None):
         super(MainTableView, self).__init__(parent)
