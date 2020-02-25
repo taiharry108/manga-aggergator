@@ -24,7 +24,7 @@ class Window(QtWidgets.QWidget):
         self.searchBtn.setText('Search')
         self.info_layout = InfoLayout()
         self.resultTb = MainTableView(self)
-        self.resultMdl = ApiResultModel(self.df, self)
+        self.resultMdl = ApiResultModel(self.df, self.resultTb)
         self.searchBtn.clicked.connect(self.resultTb.search_manga)
         self.textEdit.returnPressed.connect(self.resultTb.search_manga)
         self.mangaSiteComboBox = QtWidgets.QComboBox(self)
