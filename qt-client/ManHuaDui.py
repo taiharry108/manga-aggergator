@@ -15,7 +15,7 @@ def decrypt(encrypted) -> str:
     encrypted = base64.b64decode(encrypted)
     passphrase = "123456781234567G"
     iv = "ABCDEF1G34123412"
-    aes = AES.new(passphrase, AES.MODE_CBC, iv)
+    aes = AES.new(passphrase.encode('utf-8'), AES.MODE_CBC, iv.encode('utf-8'))
 
     decrypted = aes.decrypt(encrypted)
     return decrypted.strip().decode('utf8')
