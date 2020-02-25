@@ -5,9 +5,9 @@ if TYPE_CHECKING:
     from MangaSite import MangaSite
 
 class MangaIndexTypeEnum(Enum):
-    CHAPTER = 1
-    VOLUME = 2
-    MISC = 3
+    CHAPTER = "Chapter"
+    VOLUME = "Volume"
+    MISC = "Misc"
 
 class Chapter(object):
     def __init__(self, title: str, page_url: str):
