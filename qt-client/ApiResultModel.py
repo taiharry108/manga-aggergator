@@ -19,7 +19,7 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         self._data = data        
         
         self.page_downloaded = defaultdict(set)
-
+        
     def rowCount(self, parent=None):
         return len(self._data)
 
@@ -68,10 +68,23 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         total_page_idx = self.get_col_idx_from_name('Total Pages')
         self.setData(self.index(index.row(), total_page_idx), total_pages)
     
+    def get_data_for_row(self, row_idx: int, col_name: str):
+        return self._data[row_idx][col_name]
+    
+    def get_status(self):
+        return self.parent().currentStatus
+    
     def get_headers(self):
-        if len(self._data) != 0:
-            return list(self._data[0].keys())
+        if self.status == ApiResultModelStatus.INDEX:
+            return ['name', 'm_type', 'title', 'Progress', 'Pages Downloaded', 'Total Pages']
+        elif self.status == ApiResultModelStatus.SEARCH:
+            return ['name']
         else:
             return []
+        # if len(self._data) != 0:
+        #     return list(self._data[0].keys())
+        # else:
+        #     return []
 
     headers = property(get_headers)
+    status = property(get_status)

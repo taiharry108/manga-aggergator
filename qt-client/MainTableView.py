@@ -25,6 +25,7 @@ class MainTableView(QtWidgets.QTableView):
         model = self.model()
         model.setNewData(df)
         self.currentStatus = new_status
+        
         if new_status == ApiResultModelStatus.INDEX and len(df) != 0:
             for d in df:
                 d['Progress'] = 0
@@ -32,6 +33,7 @@ class MainTableView(QtWidgets.QTableView):
                 d['Total Pages'] = 0
             self.setItemDelegateForColumn(
                 model.get_col_idx_from_name('Progress'), ProgressBarDelegate())
+        self.resizeColumnsToContents()
 
     def search_manga(self):
         keyword = self.parent().textEdit.text()
@@ -55,8 +57,8 @@ class MainTableView(QtWidgets.QTableView):
             return
         if not 'url' in self.df[0].keys():
             return
-        url_col = model.get_col_idx_from_name('url')
-        url = model.data(model.index(row, url_col))
+
+        url = model.get_data_for_row(row, 'url')
 
         if self.currentStatus == ApiResultModelStatus.SEARCH:
             self.get_chapters(url)
@@ -76,7 +78,7 @@ class MainTableView(QtWidgets.QTableView):
             for chapter_idx, chapter in enumerate(chapters):
                 title = chapter.title
                 url = chapter.page_url
-                output.append({'name': name, 'url': url, 'title':title, 'm_type': m_type, 'chapter_idx': chapter_idx})
+                output.append({'name': name, 'url': url, 'title':title, 'm_type': m_type.value, 'chapter_idx': chapter_idx})
         output = (output, ApiResultModelStatus.INDEX)
         self.manga = manga        
         self.new_table_return(output)
