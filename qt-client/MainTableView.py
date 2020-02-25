@@ -14,7 +14,6 @@ class MainTableView(QtWidgets.QTableView):
     def new_table_return(self, output):
         output, new_status = output
         df = output
-        print(df, new_status)
         self.df = df
         model = self.model()
         model.setNewData(df)

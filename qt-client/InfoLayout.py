@@ -32,7 +32,7 @@ class InfoLayout(QtWidgets.QVBoxLayout):
         if manga.finished:
             self.finished_lbl.setText('完結')
         else:
-            self.finished_lbl.setText('完結')
+            self.finished_lbl.setText('連載')
         
         self.last_update_lbl.setText(manga.last_udpate)
         self.name_lbl.setText(manga_name)
