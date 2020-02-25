@@ -26,9 +26,7 @@ class _Downloader(QtCore.QObject):
         super(_Downloader, self).__init__(parent, *args, **kwargs)
         self._manager = QtNetwork.QNetworkAccessManager(parent)
         self.root_path = Path(root_path)
-        self._timer_dict = defaultdict(QtCore.QTimer)
         self._page_downloaded_dict = defaultdict(int)
-        # self._page_idx_dict = defaultdict(int)
         self._total_page_dict = {}
         self._called_download_manga_chapter = False
 
@@ -43,11 +41,9 @@ class _Downloader(QtCore.QObject):
             self._process_idr(*idr)
         else:
             self._processing_idrs -= 1
-        print('total process', self._processing_idrs)
 
     
     def _process_idr(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int, page_idx: int, img_url: str):
-        print(f'going to process {img_url} to ')
         output_dir = self.get_output_dir(manga, m_type, idx)
         fn = output_dir/f'{page_idx}'
         self.download_image(url=img_url, output_fn=fn.as_posix(
@@ -58,12 +54,8 @@ class _Downloader(QtCore.QObject):
         if self._processing_idrs != 5:            
             self._process_idr(manga, m_type, idx, page_idx, img_url)
             self._processing_idrs += 1
-            print('total process', self._processing_idrs)
         else:
-            print(f'add {img_url} to queue')
             self._pending_q.put((manga, m_type, idx, page_idx, img_url))
-
-
 
     
     def get_request(self, url: str, callback: Callable[[QNetworkReply, dict], None], referer: str=None, meta_dict=None):
@@ -106,9 +98,7 @@ class _Downloader(QtCore.QObject):
     def emit_chapter_download_complete(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         self.chapter_download_complete.emit(manga, m_type, idx)
         output_dir = self.get_output_dir(manga, m_type, idx).as_posix()
-        # self._timer_dict.pop(output_dir)
         self._page_downloaded_dict.pop(output_dir)
-        # self._page_idx_dict.pop(output_dir)
         self._total_page_dict.pop(output_dir)
     
     def emit_download_complete_signal(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int, page_idx: int):
@@ -156,19 +146,11 @@ class _Downloader(QtCore.QObject):
     def download_pages(self, pages: list, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         output_dir = self.get_output_dir(manga, m_type, idx)
         dl_key = output_dir.as_posix()
-        # timer = self._timer_dict[dl_key]
         self._total_page_dict[dl_key] = len(pages)
 
         for page_idx, img_url in enumerate(pages):
             self.add_idr_to_q(manga, m_type, idx, page_idx, img_url)
 
-        # timer.setInterval(500)
-        
-        # timer.timeout.connect(
-        #     partial(self._download_images, pages, manga, m_type, idx))
-
-        # timer.start()
-    
     
     def download_manga_chapter(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         site = manga.site
