@@ -18,7 +18,7 @@ class Window(QtWidgets.QWidget):
         self.threadpool = QtCore.QThreadPool()
 
         self.textEdit = QtWidgets.QLineEdit(self)
-        self.textEdit.setText('stone')        
+        self.textEdit.setText('')        
 
         self.searchBtn = QtWidgets.QToolButton(self)
         self.searchBtn.setText('Search')
