@@ -139,7 +139,7 @@ class _Downloader(QtCore.QObject):
 
         name = manga.name
         site = manga.site
-        title = chapter.title
+        title = chapter.title.strip()
 
         output_dir = self.root_path/Path(site.name)/name/title
         return output_dir
