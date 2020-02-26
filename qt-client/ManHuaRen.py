@@ -1,3 +1,4 @@
+import string
 from MangaSite import MangaSite
 from bs4 import BeautifulSoup
 from PySide2 import QtNetwork
@@ -11,6 +12,51 @@ import re
 from Downloader import Downloader
 QNetworkReply = QtNetwork.QNetworkReply
 
+digs = string.digits + string.ascii_letters
+
+
+def int2base(x, base):
+    if x < 0:
+        sign = -1
+    elif x == 0:
+        return digs[0]
+    else:
+        sign = 1
+
+    x *= sign
+    digits = []
+
+    while x:
+        digits.append(digs[int(x % base)])
+        x = int(x / base)
+
+    if sign < 0:
+        digits.append('-')
+
+    digits.reverse()
+
+    return ''.join(digits)
+
+
+def decode(p, a, c, k, d):
+    def e(c):
+        first = "" if c < a else e(int(c/a))
+        c = c % a
+        if c > 35:
+            second = chr(c + 29)
+        else:
+            second = int2base(c, 36)
+        return first + second
+    while c != 0:
+        c -= 1
+        d[e(c)] = k[c] if k[c] != "" else e(c)
+    k = [lambda x: d[x]]
+    def e(): return '\\w+'
+    c = 1
+    while c != 0:
+        c -= 1
+        p = re.sub(f'\\b{e()}\\b', lambda x: k[c](x.group()), p)
+    return p
 
 class ManHuaRen(MangaSite):
     def __init__(self, downloader: Downloader):
@@ -81,6 +127,8 @@ class ManHuaRen(MangaSite):
             m_type = get_type(idx_type)
             for a in ul.find_all('a'):
                 url = a.get('href')
+                if not url.startswith('http'):
+                    url = self.url + url.lstrip('/')
                 title = a.text
                 manga.add_chapter(m_type=m_type, title=title, page_url=url)
 
@@ -91,22 +139,23 @@ class ManHuaRen(MangaSite):
         data = reply.readAll()
         soup = BeautifulSoup(data.data(), features="html.parser")
 
-        pattern = re.compile(r"var img_data = '(.*)'")
         for script in soup.find_all('script'):
-            match = pattern.search(script.text)
-            if match:
+            if script.text.startswith('eval'):
+                match = re.search('return p;}(.*\))\)', script.text)
                 break
+        if match:
+            print('match1')
+            tuple_str = match.group(1)
+            p, a, c, k, e, d = eval(tuple_str)
+            p = decode(p, a, c, k, d)
+            print(p)
 
-        decoded = base64.b64decode(match.group(1))
-        decoded_list = json.loads(decoded)
+            match2 = re.search(r'var newImgs=(.*);', p)
+            if match2:
+                print('match2')
+                pages = eval(match2.group(1))
 
-        vgr_data = soup.find('div', 'vg-r-data')
-        host = vgr_data.get('data-host')
-        img_pre = vgr_data.get('data-img_pre')
-        pages = [f'{host}{img_pre}{d["img_webp"]}' for d in decoded_list]
-        
-
-        self.get_pages_completed.emit(pages, meta_dict['manga'], meta_dict['m_type'], meta_dict['idx'])
+                self.get_pages_completed.emit(pages, meta_dict['manga'], meta_dict['m_type'], meta_dict['idx'])
 
     def search_manga(self, keyword):
         search_url = f'{self.url}search?title={keyword}&language=1'
