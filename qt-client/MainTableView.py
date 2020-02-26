@@ -10,11 +10,11 @@ from Manga import Manga, MangaIndexTypeEnum
 import zipfile, os
 import shutil
 
-def zipdir(fn, path):
+def zipdir(fn: str, path: str):
+    path = Path(path)
     with zipfile.ZipFile(fn, 'w', zipfile.ZIP_DEFLATED) as ziph:
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                ziph.write(os.path.join(root, file))
+        for filename in path.glob('./*'):
+            ziph.write(filename, arcname=filename.name)
 
 
 class MainTableView(QtWidgets.QTableView):
