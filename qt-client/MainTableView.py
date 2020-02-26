@@ -1,6 +1,5 @@
-from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2 import QtWidgets, QtCore
 from ApiResultModel import ApiResultModel, ApiResultModelStatus
-from Worker import Worker
 from pathlib import Path
 from functools import partial
 from ProgressBarDelegate import ProgressBarDelegate
@@ -8,6 +7,14 @@ from Downloader import Downloader
 from MangaSiteFactory import get_manga_site, MangaSiteEnum
 from typing import List
 from Manga import Manga, MangaIndexTypeEnum
+import zipfile, os
+import shutil
+
+def zipdir(fn, path):
+    with zipfile.ZipFile(fn, 'w', zipfile.ZIP_DEFLATED) as ziph:
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                ziph.write(os.path.join(root, file))
 
 
 class MainTableView(QtWidgets.QTableView):
@@ -18,6 +25,7 @@ class MainTableView(QtWidgets.QTableView):
         model = self.model()
         model.setNewData(df)
         self.currentStatus = new_status
+        
         if new_status == ApiResultModelStatus.INDEX and len(df) != 0:
             for d in df:
                 d['Progress'] = 0
@@ -25,6 +33,7 @@ class MainTableView(QtWidgets.QTableView):
                 d['Total Pages'] = 0
             self.setItemDelegateForColumn(
                 model.get_col_idx_from_name('Progress'), ProgressBarDelegate())
+        self.resizeColumnsToContents()
 
     def search_manga(self):
         keyword = self.parent().textEdit.text()
@@ -48,8 +57,8 @@ class MainTableView(QtWidgets.QTableView):
             return
         if not 'url' in self.df[0].keys():
             return
-        url_col = model.get_col_idx_from_name('url')
-        url = model.data(model.index(row, url_col))
+
+        url = model.get_data_for_row(row, 'url')
 
         if self.currentStatus == ApiResultModelStatus.SEARCH:
             self.get_chapters(url)
@@ -96,6 +105,12 @@ class MainTableView(QtWidgets.QTableView):
     
     def chapter_download_complete(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int):
         self.index_dict.pop((m_type, idx))
+        output_dir = self.downloader.get_output_dir(manga, m_type, idx)
+        zip_path = output_dir.as_posix()
+        zip_fn = output_dir.with_suffix('.zip')
+        zipdir(zip_fn, zip_path)
+        shutil.rmtree(zip_path)
+
     
     def __init__(self, parent=None):
         super(MainTableView, self).__init__(parent)
