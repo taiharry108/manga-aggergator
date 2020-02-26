@@ -44,6 +44,7 @@ class _Downloader(QtCore.QObject):
 
     
     def _process_idr(self, manga: Manga, m_type: MangaIndexTypeEnum, idx: int, page_idx: int, img_url: str):
+        print('going to process', img_url)
         output_dir = self.get_output_dir(manga, m_type, idx)
         fn = output_dir/f'{page_idx}'
         self.download_image(url=img_url, output_fn=fn.as_posix(

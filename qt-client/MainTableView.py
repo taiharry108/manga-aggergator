@@ -78,7 +78,7 @@ class MainTableView(QtWidgets.QTableView):
             for chapter_idx, chapter in enumerate(chapters):
                 title = chapter.title
                 url = chapter.page_url
-                output.append({'name': name, 'url': url, 'title':title, 'm_type': m_type.value, 'chapter_idx': chapter_idx})
+                output.append({'name': name, 'url': url, 'title':title, 'm_type': m_type, 'chapter_idx': chapter_idx})
         output = (output, ApiResultModelStatus.INDEX)
         self.manga = manga        
         self.new_table_return(output)
