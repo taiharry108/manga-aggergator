@@ -13,7 +13,6 @@ class ApiResultModelStatus(Enum):
 
 
 class ApiResultModel(QtCore.QAbstractTableModel):
-
     def __init__(self, data: list, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self._data = data        
@@ -31,7 +30,7 @@ class ApiResultModel(QtCore.QAbstractTableModel):
             if role == Qt.DisplayRole:
                 row_idx = index.row()
                 column_idx = index.column()
-                return_v = str(self._data[row_idx][self.headers[column_idx]])
+                return_v = str(self._data[row_idx][self.headers[column_idx]])                
                 return return_v
 
     def headerData(self, column, orientation, role=QtCore.Qt.DisplayRole):
@@ -48,8 +47,9 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         if role == Qt.EditRole:
             row = index.row()
             column = index.column()
+            
             self._data[row][self.headers[column]] = value
-            self.dataChanged.emit(index, index, role)
+            self.dataChanged.emit(index, index, [role])
             return True
     
     def page_download_finished(self, index):
@@ -63,7 +63,10 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         self.setData(self.index(row, column3), progress)
     
     def get_col_idx_from_name(self, name: str) -> int:
-        return self.headers.index(name)
+        if not name in self.headers:
+            return -1
+        else:
+            return self.headers.index(name)
 
     def set_total_pages(self, index, total_pages):
         total_page_idx = self.get_col_idx_from_name('Total Pages')

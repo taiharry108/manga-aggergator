@@ -67,9 +67,8 @@ class MainTableView(QtWidgets.QTableView):
 
         if self.currentStatus == ApiResultModelStatus.SEARCH:
             self.get_chapters(url)
-        elif self.currentStatus == ApiResultModelStatus.INDEX:
-            pass
-            self.get_pages(url, index)
+        # elif self.currentStatus == ApiResultModelStatus.INDEX:
+            # self.get_pages(url, index)
     
     def search_result_return(self, mangas: List[Manga]):
         output = ([{"name": manga.name, 'url':manga.url} for manga in mangas], ApiResultModelStatus.SEARCH)
@@ -116,6 +115,18 @@ class MainTableView(QtWidgets.QTableView):
         zip_fn = output_dir.with_suffix('.zip')
         zipdir(zip_fn, zip_path)
         shutil.rmtree(zip_path)
+    
+    def dataChanged(self, topLeft: QtCore.QModelIndex, bottomRight: QtCore.QModelIndex, roles: list):        
+        if topLeft == bottomRight:
+            col_idx = topLeft.column()
+            model = self.model()
+            if col_idx == model.get_col_idx_from_name('Download'):
+                checked = model.data(topLeft) == 'True'
+                if checked:
+                    print('checked')
+                else:
+                    print('unchecked')
+
 
     
     def __init__(self, parent=None):
