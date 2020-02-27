@@ -47,9 +47,10 @@ class ApiResultModel(QtCore.QAbstractTableModel):
         if role == Qt.EditRole:
             row = index.row()
             column = index.column()
-            
+            o_value = self._data[row][self.headers[column]]
             self._data[row][self.headers[column]] = value
-            self.dataChanged.emit(index, index, [role])
+            if o_value != value:
+                self.dataChanged.emit(index, index, [role])
             return True
     
     def page_download_finished(self, index):
