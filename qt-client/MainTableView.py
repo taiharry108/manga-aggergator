@@ -7,8 +7,9 @@ from Downloader import Downloader
 from MangaSiteFactory import get_manga_site, MangaSiteEnum
 from typing import List
 from Manga import Manga, MangaIndexTypeEnum
-import zipfile, os
+import zipfile
 import shutil
+from CheckBoxDelegate import CheckBoxDelegate
 
 def zipdir(fn: str, path: str):
     path = Path(path)
@@ -31,8 +32,12 @@ class MainTableView(QtWidgets.QTableView):
                 d['Progress'] = 0
                 d['Pages Downloaded'] = 0
                 d['Total Pages'] = 0
+                d['Download'] = "False"
             self.setItemDelegateForColumn(
-                model.get_col_idx_from_name('Progress'), ProgressBarDelegate())
+                model.get_col_idx_from_name('Progress'), ProgressBarDelegate(self))
+            self.setItemDelegateForColumn(
+                model.get_col_idx_from_name('Download'), CheckBoxDelegate(self))
+            
         self.resizeColumnsToContents()
 
     def search_manga(self):
@@ -63,6 +68,7 @@ class MainTableView(QtWidgets.QTableView):
         if self.currentStatus == ApiResultModelStatus.SEARCH:
             self.get_chapters(url)
         elif self.currentStatus == ApiResultModelStatus.INDEX:
+            pass
             self.get_pages(url, index)
     
     def search_result_return(self, mangas: List[Manga]):

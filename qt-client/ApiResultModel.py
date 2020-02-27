@@ -31,7 +31,8 @@ class ApiResultModel(QtCore.QAbstractTableModel):
             if role == Qt.DisplayRole:
                 row_idx = index.row()
                 column_idx = index.column()
-                return str(self._data[row_idx][self.headers[column_idx]])
+                return_v = str(self._data[row_idx][self.headers[column_idx]])
+                return return_v
 
     def headerData(self, column, orientation, role=QtCore.Qt.DisplayRole):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
@@ -76,15 +77,12 @@ class ApiResultModel(QtCore.QAbstractTableModel):
     
     def get_headers(self):
         if self.status == ApiResultModelStatus.INDEX:
-            return ['name', 'm_type', 'title', 'Progress', 'Pages Downloaded', 'Total Pages']
+            return ['name', 'm_type', 'title', 'Progress', 'Pages Downloaded', 'Total Pages', 'Download']
         elif self.status == ApiResultModelStatus.SEARCH:
             return ['name']
         else:
             return []
-        # if len(self._data) != 0:
-        #     return list(self._data[0].keys())
-        # else:
-        #     return []
+            # return ["Test"]
 
     headers = property(get_headers)
     status = property(get_status)
