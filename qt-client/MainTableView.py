@@ -66,9 +66,7 @@ class MainTableView(QtWidgets.QTableView):
         url = model.get_data_for_row(row, 'url')
 
         if self.currentStatus == ApiResultModelStatus.SEARCH:
-            self.get_chapters(url)
-        # elif self.currentStatus == ApiResultModelStatus.INDEX:
-            # self.get_pages(url, index)
+            self.get_chapters(url)        
     
     def search_result_return(self, mangas: List[Manga]):
         output = ([{"name": manga.name, 'url':manga.url} for manga in mangas], ApiResultModelStatus.SEARCH)
@@ -116,14 +114,27 @@ class MainTableView(QtWidgets.QTableView):
         zipdir(zip_fn, zip_path)
         shutil.rmtree(zip_path)
     
-    def dataChanged(self, topLeft: QtCore.QModelIndex, bottomRight: QtCore.QModelIndex, roles: list):        
+    def checkBox_changed(self, index: QtCore.QModelIndex, value: bool):
+        model = index.model()
+        row = index.row()
+        if not 'url' in self.df[0].keys():
+            return
+
+        url = model.get_data_for_row(row, 'url')
+
+        if self.currentStatus == ApiResultModelStatus.INDEX:
+            self.get_pages(url, index)
+
+    
+    def dataChanged(self, topLeft: QtCore.QModelIndex, bottomRight: QtCore.QModelIndex, roles: list):
+        super(MainTableView, self).dataChanged(topLeft, bottomRight, roles)
         if topLeft == bottomRight:
             col_idx = topLeft.column()
             model = self.model()
             if col_idx == model.get_col_idx_from_name('Download'):
                 checked = model.data(topLeft) == 'True'
                 if checked:
-                    print('checked')
+                    self.checkBox_changed(topLeft, True)
                 else:
                     print('unchecked')
 
